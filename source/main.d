@@ -1,11 +1,11 @@
 import std.stdio, std.typecons;
 
 import poodinis;
-import gfm.opengl;
+import gfm.opengl, gfm.sdl2;
 
 import engine;
 
-import doxel.doxelgame;
+import doxel.doxelgame, inputhandler;
 
 void main()
 {
@@ -22,9 +22,13 @@ void run()
 	Camera cam = new Camera();
 	cam.setRatio(16.0/9);
 	auto container = new shared DependencyContainer();
+
 	container.register!OpenGL.existingInstance(context.gl);
+	container.register!Context.existingInstance(context);
 	container.register!Camera.existingInstance(cam);
+	container.register!InputHandler;
   container.register!(Game, DoxelGame);
+
 	Game game = container.resolve!Game;
 	scope(exit) game.destroy;
 

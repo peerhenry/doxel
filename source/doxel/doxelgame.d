@@ -2,11 +2,16 @@ module doxel.doxelgame;
 
 import std.stdio;
 
-import gfm.opengl, gfm.math;
+import gfm.opengl, gfm.math, gfm.sdl2;
 
 import engine;
 
-import doxel.cube, vertex, model, modelsetter, pvm_normalmatrix_setter;
+import doxel.cube, 
+vertex, 
+model, 
+modelsetter, 
+pvm_normalmatrix_setter,
+inputhandler;
 
 class DoxelGame : Game
 {
@@ -14,11 +19,13 @@ class DoxelGame : Game
   Camera camera;
   Model!VertexPN model;
   OpenGL gl;
+  InputHandler input;
   VertexSpecification!VertexPN vertexSpec;
 
-  this(OpenGL gl, Camera camera)
+  this(OpenGL gl, InputHandler input, Camera camera)
   {
     this.gl = gl;
+    this.input = input;
     this.camera = camera;
     this.createProgram();
   }
@@ -41,6 +48,13 @@ class DoxelGame : Game
 
   void initialize()
   {
+    createModels();
+    setGlSettings();
+    initUniforms();
+  }
+
+  void createModels()
+  {
     Cube cube = new Cube();
     VertexPN[24] vertexArray;
     ModelSetter modelSetter = new PvmNormalMatrixSetter(this.program, this.camera);
@@ -59,12 +73,6 @@ class DoxelGame : Game
       vertexArray[i] = VertexPN(vec3f(x, y, z), vec3f(n_x, n_y, n_z));
     }
     this.model = new Model!VertexPN(gl, modelSetter, this.vertexSpec, vertexArray, cube.indices);
-    setGlSettings();
-
-    this.program.uniform("LightDirection").set( vec3f(-0.8, 0.0, 1.0).normalized() );
-    this.program.uniform("LightColor").set( vec3f(1.0, 1.0, 1.0) );
-    this.program.uniform("AmbientColor").set( vec3f(0.0, 0.0, 0.0) );
-    this.program.uniform("MaterialColor").set( vec3f(0.7, 0.2, 0.1) );
   }
 
   void setGlSettings()
@@ -72,27 +80,30 @@ class DoxelGame : Game
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
-    glFrontFace(GL_CW); // clockwise faces are front*/
+    glFrontFace(GL_CW); // clockwise faces are front
     glClearColor(100.0/255, 149.0/255, 237.0/255, 1.0); // cornflower blue
+  }
+
+  void initUniforms()
+  {
+    this.program.uniform("LightDirection").set( vec3f(-0.8, 0.3, -1.0).normalized() );
+    this.program.uniform("LightColor").set( vec3f(1.0, 1.0, 1.0) );
+    this.program.uniform("AmbientColor").set( vec3f(0.2, 0.2, 0.2) );
+    this.program.uniform("MaterialColor").set( vec3f(0.7, 0.2, 0.1) );
+    this.program.uniform("PVM").set( mat4f.identity );
+    this.program.uniform("NormalMatrix").set( mat3f.identity );
   }
 
   void update()
   {
-    
+    input.update();
+    camera.update();
   }
 
   void draw()
   {
-    mat4f modelMatrix = this.model.modelMatrix;
-    mat3f normalMatrix = cast(mat3f)modelMatrix;
-    mat4f pvm = this.camera.projection * this.camera.view * modelMatrix;
-    this.program.uniform("PVM").set( pvm );
-    this.program.uniform("NormalMatrix").set( normalMatrix );
-
     this.program.use();
-
     this.model.draw();
-
     program.unuse();
   }
 }

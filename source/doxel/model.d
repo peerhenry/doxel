@@ -18,7 +18,12 @@ class Model(VertexType)
   mat4f modelMatrix;
 
   /// constructor
-  this(OpenGL gl, ModelSetter modelSetter, VertexSpecification!VertexType spec, VertexType[] vertices, GLuint[] indices)
+  this(
+    OpenGL gl, // for buffer creation
+    ModelSetter modelSetter, // for uploading the model matrix
+    VertexSpecification!VertexType spec, // for creating the VAO
+    VertexType[] vertices, 
+    GLuint[] indices)
   {
     this.modelSetter = modelSetter;
     vbo = new GLBuffer(gl, GL_ARRAY_BUFFER, GL_STATIC_DRAW);

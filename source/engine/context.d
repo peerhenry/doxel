@@ -1,3 +1,5 @@
+import core.thread;
+
 import gfm.logger,
        gfm.sdl2,
        gfm.opengl;
@@ -79,6 +81,7 @@ class Context
       window.swapBuffers();
 
       shouldQuit = sdl.keyboard.isPressed(SDLK_ESCAPE);
+      Thread.sleep( dur!("msecs")( 16 ) );
     }
   }
 }

@@ -11,8 +11,8 @@ class Camera
   vec3f pos;
   float theta;
   float phi;
+  vec3f dir;
   vec3f target;
-  static immutable vec3f up = vec3f(0.0, 0.0, 1.0);
   float ratio;
   float near;
   float far;
@@ -20,7 +20,8 @@ class Camera
   // matrix calculations
   void calculateTargetAndView()
   {
-    this.target = this.pos + vec3f(cos(theta)*cos(phi), sin(theta)*cos(phi), sin(phi));
+    this.dir = vec3f(cos(theta)*cos(phi), sin(theta)*cos(phi), sin(phi));
+    this.target = this.pos + this.dir;
     calculateView();
   }
   void calculateView()
@@ -33,6 +34,8 @@ class Camera
   }
 
   public:
+  
+  static immutable vec3f up = vec3f(0.0, 0.0, 1.0);
 
   this()
   {
@@ -97,6 +100,11 @@ class Camera
   @property mat4f view()
   {
     return m_view;
+  }
+
+  @property vec3f direction()
+  {
+    return dir;
   }
 
   unittest
