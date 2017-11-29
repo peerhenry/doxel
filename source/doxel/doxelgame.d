@@ -1,12 +1,12 @@
 module doxel.doxelgame;
 
-import std.stdio;
+import std.array, std.stdio;
 
 import gfm.opengl, gfm.math, gfm.sdl2;
 
 import engine;
 
-import doxel.cube, inputhandler;
+import doxel.cube, inputhandler, quadgenerator;
 
 class DoxelGame : Game
 {
@@ -53,9 +53,9 @@ class DoxelGame : Game
   void createModels()
   {
     Cube cube = new Cube();
-    VertexPNT[24] vertexArray;
+    VertexPNT[] vertexArray;
     ModelSetter modelSetter = new PvmNormalMatrixSetter(this.program, this.camera);
-    foreach(i; 0..24)
+    /*foreach(i; 0..24)
     {
       const int offset = 3*i;
 
@@ -71,7 +71,15 @@ class DoxelGame : Game
       const float v = cube.uv[2*i + 1];
 
       vertexArray[i] = VertexPNT(vec3f(x, y, z), vec3f(n_x, n_y, n_z), vec2f(u, v));
-    }
+    }*/
+    int counter = 0;
+    vertexArray ~= generateQuad(Side.Top, vec3f(0,0,0.5), vec2i(0,0));
+    vertexArray ~= generateQuad(Side.Bottom, vec3f(0,0,-0.5), vec2i(0,0));
+    vertexArray ~= generateQuad(Side.North, vec3f(0,0.5,0), vec2i(0,0));
+    vertexArray ~= generateQuad(Side.South, vec3f(0,-0.5,0), vec2i(0,0));
+    vertexArray ~= generateQuad(Side.East, vec3f(0.5,0,0), vec2i(0,0));
+    vertexArray ~= generateQuad(Side.West, vec3f(-0.5,0,0), vec2i(0,0));
+    
     this.model = new Model!VertexPNT(gl, modelSetter, this.vertexSpec, vertexArray, cube.indices);
   }
 
