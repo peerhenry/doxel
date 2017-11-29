@@ -1,0 +1,28 @@
+{
+	"name": "doxel",
+	"authors": [
+		"PeerHenry"
+	],
+	"description": "A Voxel D application",
+	"copyright": "Copyright © 2017, PeerHenry",
+	"license": "proprietary",
+	"targetType": "executable",
+	"targetPath": "bin",
+
+	"dependencies": {
+		"doxel:engine": "*",
+		"poodinis": "~>8.0.1",
+		"gfm": "~>6.2.12"
+	},
+
+	"subPackages": [
+		{
+			"name": "engine",
+			"targetType": "library",
+			"sourcePaths": [ "source/engine" ],
+			"dependencies": {
+				"gfm": "~>6.2.12"
+			}
+		}
+	]
+}

@@ -1,0 +1,4 @@
+interface Updatable
+{
+  void update();
+}
