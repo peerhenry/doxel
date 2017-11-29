@@ -8,6 +8,7 @@
 		"derelict-sdl2": "1.9.7",
 		"derelict-util": "2.0.6",
 		"gfm": "6.2.12",
+		"imageformats": "6.1.2",
 		"poodinis": "8.0.1"
 	}
 }

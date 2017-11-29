@@ -6,21 +6,17 @@ import gfm.opengl, gfm.math, gfm.sdl2;
 
 import engine;
 
-import doxel.cube, 
-vertex, 
-model, 
-modelsetter, 
-pvm_normalmatrix_setter,
-inputhandler;
+import doxel.cube, inputhandler;
 
 class DoxelGame : Game
 {
   GLProgram program;
   Camera camera;
-  Model!VertexPN model;
+  Model!VertexPNT model;
   OpenGL gl;
   InputHandler input;
-  VertexSpecification!VertexPN vertexSpec;
+  VertexSpecification!VertexPNT vertexSpec;
+  Texture texture;
 
   this(OpenGL gl, InputHandler input, Camera camera)
   {
@@ -28,6 +24,7 @@ class DoxelGame : Game
     this.input = input;
     this.camera = camera;
     this.createProgram();
+    this.texture = new Texture(gl, this.program, "Atlas", "atlas.png");
   }
 
   ~this()
@@ -43,7 +40,7 @@ class DoxelGame : Game
     // dispense with loading and compiling of individual shaders
     string[] shader_source = readLines("source/doxel/glsl/standard.glsl");
     this.program = new GLProgram(gl, shader_source);
-    this.vertexSpec = new VertexSpecification!VertexPN(this.program);
+    this.vertexSpec = new VertexSpecification!VertexPNT(this.program);
   }
 
   void initialize()
@@ -56,7 +53,7 @@ class DoxelGame : Game
   void createModels()
   {
     Cube cube = new Cube();
-    VertexPN[24] vertexArray;
+    VertexPNT[24] vertexArray;
     ModelSetter modelSetter = new PvmNormalMatrixSetter(this.program, this.camera);
     foreach(i; 0..24)
     {
@@ -70,9 +67,12 @@ class DoxelGame : Game
       const float n_y = cube.normals[offset + 1];
       const float n_z = cube.normals[offset + 2];
 
-      vertexArray[i] = VertexPN(vec3f(x, y, z), vec3f(n_x, n_y, n_z));
+      const float u = cube.uv[2*i];
+      const float v = cube.uv[2*i + 1];
+
+      vertexArray[i] = VertexPNT(vec3f(x, y, z), vec3f(n_x, n_y, n_z), vec2f(u, v));
     }
-    this.model = new Model!VertexPN(gl, modelSetter, this.vertexSpec, vertexArray, cube.indices);
+    this.model = new Model!VertexPNT(gl, modelSetter, this.vertexSpec, vertexArray, cube.indices);
   }
 
   void setGlSettings()
@@ -89,9 +89,10 @@ class DoxelGame : Game
     this.program.uniform("LightDirection").set( vec3f(-0.8, 0.3, -1.0).normalized() );
     this.program.uniform("LightColor").set( vec3f(1.0, 1.0, 1.0) );
     this.program.uniform("AmbientColor").set( vec3f(0.2, 0.2, 0.2) );
-    this.program.uniform("MaterialColor").set( vec3f(0.7, 0.2, 0.1) );
+    this.program.uniform("MaterialColor").set( vec3f(1, 1, 1) );
     this.program.uniform("PVM").set( mat4f.identity );
     this.program.uniform("NormalMatrix").set( mat3f.identity );
+    this.texture.bind();
   }
 
   void update()
@@ -103,6 +104,7 @@ class DoxelGame : Game
   void draw()
   {
     this.program.use();
+    this.texture.bind();
     this.model.draw();
     program.unuse();
   }

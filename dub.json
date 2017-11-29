@@ -21,7 +21,8 @@
 			"targetType": "library",
 			"sourcePaths": [ "source/engine" ],
 			"dependencies": {
-				"gfm": "~>6.2.12"
+				"gfm": "~>6.2.12",
+				"imageformats": "~>6.1.2"
 			}
 		}
 	]

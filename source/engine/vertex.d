@@ -10,7 +10,7 @@ struct VertexPNT
 {
   vec3f position;
   vec3f normal;
-  vec2f tex;
+  vec2f uv;
 }
 
 struct VertexPNC

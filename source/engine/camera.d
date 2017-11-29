@@ -1,7 +1,9 @@
 import std.math;
 import gfm.math;
 
-class Camera
+import updatable;
+
+class Camera : Updatable
 {
   private:
   // matrices
