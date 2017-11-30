@@ -6,7 +6,7 @@ import gfm.opengl, gfm.math, gfm.sdl2;
 
 import engine;
 
-import doxel.cube, inputhandler, cubegenerator_pnt;
+import inputhandler, cubegenerator_pnt, blocks;
 
 class DoxelGame : Game
 {
@@ -24,7 +24,7 @@ class DoxelGame : Game
     this.input = input;
     this.camera = camera;
     this.createProgram();
-    this.texture = new Texture(gl, this.program, "Atlas", "atlas.png");
+    this.texture = new Texture(gl, this.program, "Atlas", "atlas.png"); // gl, program, shader uniform name, image path
   }
 
   ~this()
@@ -58,9 +58,10 @@ class DoxelGame : Game
   {
     ModelSetter modelSetter = new PvmNormalMatrixSetter(this.program, this.camera);
     auto gen = new CubeGenerator(gl, vertexSpec, modelSetter);
-    this.models ~= gen.generateCube( vec3f(0,0,0) );
-    this.models ~= gen.generateCube( vec3f(3,3,0) );
-    this.models ~= gen.generateCube( vec3f(-3,-3,0) );
+    this.models ~= gen.generateCube( vec3f(0,0,0), Block.SAND );
+    this.models ~= gen.generateCube( vec3f(3,3,0), Block.STONE );
+    this.models ~= gen.generateCube( vec3f(-3,-3,0), Block.GRASS );
+    this.models ~= gen.generateCube( vec3f(6,3,0), Block.DIRT );
   }
 
   void setGlSettings()
