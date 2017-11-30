@@ -2,7 +2,7 @@ import gfm.opengl, gfm.math;
 
 import engine;
 
-import quadgenerator_pnt, blocks;
+import quadgenerator_pnt, blocks, sides;
 
 class CubeGenerator
 {
@@ -36,6 +36,9 @@ class CubeGenerator
       case Block.SAND:
         topij = northij = southij = westij = eastij = bottomij = vec2i(2,1);
         break;
+      case Block.EMPTY:
+        topij = northij = southij = westij = eastij = bottomij = vec2i(8,8);
+        break;
     }
     return [topij, bottomij, northij, southij, eastij, westij];
   }
@@ -58,6 +61,7 @@ class CubeGenerator
       16,17,18,18,17,19, // top
       20,21,22,22,21,23 // bottom
     ];
-    return new Model!VertexPNT(gl, setter, spec, vertexArray, indices);
+    auto mesh = Mesh!VertexPNT(vertexArray, indices);
+    return new Model!VertexPNT(gl, setter, spec, mesh);
   }
 }

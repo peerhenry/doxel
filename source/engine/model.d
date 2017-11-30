@@ -2,7 +2,7 @@ import std.typecons;
 
 import gfm.math, gfm.opengl;
 
-import vertex, modelsetter;
+import vertex, modelsetter, mesh;
 
 /// An indexed vertex model
 class Model(VertexType)
@@ -22,15 +22,14 @@ class Model(VertexType)
     OpenGL gl, // for buffer creation
     ModelSetter modelSetter, // for uploading the model matrix
     VertexSpecification!VertexType spec, // for creating the VAO
-    VertexType[] vertices, 
-    GLuint[] indices)
+    Mesh!VertexType mesh)
   {
     this.modelSetter = modelSetter;
     vbo = new GLBuffer(gl, GL_ARRAY_BUFFER, GL_STATIC_DRAW);
-    vbo.setData(vertices);
+    vbo.setData(mesh.vertices);
     ibo = new GLBuffer(gl, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
-    ibo.setData(indices);
-    this.indexCount = cast(uint)indices.length;
+    ibo.setData(mesh.indices);
+    this.indexCount = cast(uint)mesh.indices.length;
     this.vao = new GLVAO(gl);
     {
       this.vao.bind();

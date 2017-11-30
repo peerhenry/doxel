@@ -2,15 +2,7 @@ import gfm.math;
 
 import engine;
 
-enum Side
-{
-  Top,
-  Bottom,
-  North,
-  South,
-  East,
-  West
-}
+import sides;
 
 // todo: make generic
 VertexPNT[4] generateQuad(Side side, vec3f center, vec2i atlasIndex)

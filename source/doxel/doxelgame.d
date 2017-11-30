@@ -6,7 +6,7 @@ import gfm.opengl, gfm.math, gfm.sdl2;
 
 import engine;
 
-import inputhandler, cubegenerator_pnt, blocks;
+import inputhandler, cubegenerator_pnt, chunk, chunkmodelfactory, blocks;
 
 class DoxelGame : Game
 {
@@ -57,11 +57,22 @@ class DoxelGame : Game
   void createModels()
   {
     ModelSetter modelSetter = new PvmNormalMatrixSetter(this.program, this.camera);
-    auto gen = new CubeGenerator(gl, vertexSpec, modelSetter);
+    /*auto gen = new CubeGenerator(gl, vertexSpec, modelSetter);
     this.models ~= gen.generateCube( vec3f(0,0,0), Block.SAND );
     this.models ~= gen.generateCube( vec3f(3,3,0), Block.STONE );
     this.models ~= gen.generateCube( vec3f(-3,-3,0), Block.GRASS );
-    this.models ~= gen.generateCube( vec3f(6,3,0), Block.DIRT );
+    this.models ~= gen.generateCube( vec3f(6,3,0), Block.DIRT );*/
+
+    auto chunkGen = new ChunkModelFactory(gl, vertexSpec, modelSetter);
+    auto chunk = new Chunk();
+    chunk.setBlock(4,4,2,Block.SAND);
+    chunk.setBlock(0,0,0,Block.GRASS);
+    chunk.setBlock(0,1,0,Block.SAND);
+    chunk.setBlock(1,3,0,Block.STONE);
+    chunk.setBlock(2,2,0,Block.GRASS);
+    chunk.setBlock(3,2,1,Block.DIRT);
+    chunk.setBlock(1,1,1,Block.STONE);
+    this.models ~= chunkGen.generateChunkModel(chunk);
   }
 
   void setGlSettings()
