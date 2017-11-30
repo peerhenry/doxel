@@ -2,17 +2,27 @@ import gfm.math;
 
 import engine;
 
-import chunk, quadgenerator_pnt, blocks, sides;
+import chunk, quadgenerator_pnt, blocks, sides, world;
 
-Mesh!VertexPNT buildChunkMesh(Chunk chunk)
+vec3i siteIndexToSite(int index)
+{
+  int i = index%8;
+  int k = index/64;
+  int j = (index-k*64)/8;
+  return vec3i(i,j,k);
+}
+
+Mesh!VertexPNT buildChunkMesh(World world, Chunk chunk)
 {
   VertexPNT[] vertices;
   uint[] indices;
+  int counter;
   foreach(int i, block; chunk.blocks)
   {
     if(block == Block.EMPTY) continue;
-    vec3i site = chunk.indexToCoord(i);
-    foreach(sd; allSides)
+    counter++;
+    vec3i site = siteIndexToSite(i);
+    foreach(sd; allSides) // sd is short for SideDetails
     {
       vec3i adjSite = site + cast(vec3i)sd.normal;
       bool inBounds = adjSite.x >= 0 && adjSite.x < 8 && adjSite.y >= 0 && adjSite.y < 8 && adjSite.z >= 0 && adjSite.z < 4;
@@ -20,10 +30,11 @@ Mesh!VertexPNT buildChunkMesh(Chunk chunk)
       if(inBounds) adjBlock = chunk.getBlock(adjSite.x, adjSite.y, adjSite.z);
       else
       {
-        // Chunk adjChunk = world.getAdjacentChunk(chunk, sd)
-        // adjSite = siteModulo(adjSite);
-        // adjBlock = adjChunk.getBlock(adjSite.x, adjSite.y, adjSite.z);
+        Chunk adjChunk = world.getAdjacentChunk(chunk, sd);
+        adjSite = world.siteModulo(adjSite);
+        adjBlock = adjChunk.getBlock(adjSite.x, adjSite.y, adjSite.z);
       }
+
       if(adjBlock == Block.EMPTY)
       {
         vec3f faceCenter = vec3f(site.x + 0.5*(1 + sd.normal.x), site.y + 0.5*(1 + sd.normal.y), site.z + 0.5*(1 + sd.normal.z));
@@ -34,6 +45,8 @@ Mesh!VertexPNT buildChunkMesh(Chunk chunk)
       }
     }
   }
-
+  import std.stdio,std.format;
+  writeln("counted...");
+  writeln(counter);
   return Mesh!VertexPNT(vertices, indices);
 }

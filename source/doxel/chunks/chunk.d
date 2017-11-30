@@ -1,10 +1,27 @@
 import gfm.math;
 
-import blocks;
+import iregion, region, baseregion, blocks;
 
-class Chunk
+class Chunk: BaseRegion
 {
   Block[256] blocks;
+
+  this(IRegion container, vec3i site)
+  {
+    super(1, site);
+    this.container = container;
+  }
+
+  this()
+  {
+    super(1, vec3i(4,4,2));
+  }
+
+  this(Block block)
+  {
+    super(1, vec3i(4,4,2));
+    blocks[] = block;
+  }
 
   /// Beware, the coordinates must be in bounds: 0<=i<8, 0<=j<8, 0<=k<4
   Block getBlock(int i, int j, int k)
@@ -17,14 +34,5 @@ class Chunk
   {
     int index = i + 8*j + 64*k;
     blocks[index] = block;
-  }
-
-  /// converts array index to chunk site coordinate
-  static vec3i indexToCoord(int index)
-  {
-    int i = index%8;
-    int k = index/64;
-    int j = (index-64*k)/8;
-    return vec3i(i,j,k);
   }
 }

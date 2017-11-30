@@ -14,6 +14,14 @@ struct SideDetails
 {
   Side side;
   vec3f normal;
+  vec3i normali;
+
+  this(Side side, vec3f normal)
+  {
+    this.side = side;
+    this.normal = normal;
+    this.normali = cast(vec3i)normal;
+  }
 }
 
 immutable SideDetails[] allSides = [

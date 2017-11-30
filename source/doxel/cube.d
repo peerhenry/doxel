@@ -1,5 +1,3 @@
-module doxel.cube;
-
 import gfm.math, gfm.opengl;
 
 class Cube
