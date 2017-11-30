@@ -21,6 +21,7 @@ void run()
 
 	Camera cam = new Camera();
 	cam.setRatio(16.0/9);
+
 	auto container = new shared DependencyContainer();
 
 	container.register!OpenGL.existingInstance(context.gl);

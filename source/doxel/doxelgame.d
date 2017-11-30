@@ -6,13 +6,13 @@ import gfm.opengl, gfm.math, gfm.sdl2;
 
 import engine;
 
-import doxel.cube, inputhandler, quadgenerator;
+import doxel.cube, inputhandler, cubegenerator_pnt;
 
 class DoxelGame : Game
 {
   GLProgram program;
   Camera camera;
-  Model!VertexPNT model;
+  Model!VertexPNT[] models;
   OpenGL gl;
   InputHandler input;
   VertexSpecification!VertexPNT vertexSpec;
@@ -31,7 +31,11 @@ class DoxelGame : Game
   {
     this.program.destroy;
     this.vertexSpec.destroy;
-    this.model.destroy;
+    foreach(m; this.models)
+    {
+      m.destroy;
+    }
+    this.texture.destroy;
   }
 
   /// Creates a shader program 
@@ -52,35 +56,11 @@ class DoxelGame : Game
 
   void createModels()
   {
-    Cube cube = new Cube();
-    VertexPNT[] vertexArray;
     ModelSetter modelSetter = new PvmNormalMatrixSetter(this.program, this.camera);
-    /*foreach(i; 0..24)
-    {
-      const int offset = 3*i;
-
-      const float x = cube.positions[offset + 0];
-      const float y = cube.positions[offset + 1];
-      const float z = cube.positions[offset + 2];
-
-      const float n_x = cube.normals[offset + 0];
-      const float n_y = cube.normals[offset + 1];
-      const float n_z = cube.normals[offset + 2];
-
-      const float u = cube.uv[2*i];
-      const float v = cube.uv[2*i + 1];
-
-      vertexArray[i] = VertexPNT(vec3f(x, y, z), vec3f(n_x, n_y, n_z), vec2f(u, v));
-    }*/
-    int counter = 0;
-    vertexArray ~= generateQuad(Side.Top, vec3f(0,0,0.5), vec2i(0,0));
-    vertexArray ~= generateQuad(Side.Bottom, vec3f(0,0,-0.5), vec2i(0,0));
-    vertexArray ~= generateQuad(Side.North, vec3f(0,0.5,0), vec2i(0,0));
-    vertexArray ~= generateQuad(Side.South, vec3f(0,-0.5,0), vec2i(0,0));
-    vertexArray ~= generateQuad(Side.East, vec3f(0.5,0,0), vec2i(0,0));
-    vertexArray ~= generateQuad(Side.West, vec3f(-0.5,0,0), vec2i(0,0));
-    
-    this.model = new Model!VertexPNT(gl, modelSetter, this.vertexSpec, vertexArray, cube.indices);
+    auto gen = new CubeGenerator(gl, vertexSpec, modelSetter);
+    this.models ~= gen.generateCube( vec3f(0,0,0) );
+    this.models ~= gen.generateCube( vec3f(3,3,0) );
+    this.models ~= gen.generateCube( vec3f(-3,-3,0) );
   }
 
   void setGlSettings()
@@ -94,7 +74,7 @@ class DoxelGame : Game
 
   void initUniforms()
   {
-    this.program.uniform("LightDirection").set( vec3f(-0.8, 0.3, -1.0).normalized() );
+    this.program.uniform("LightDirection").set( vec3f(0.8, -0.3, -1.0).normalized() );
     this.program.uniform("LightColor").set( vec3f(1.0, 1.0, 1.0) );
     this.program.uniform("AmbientColor").set( vec3f(0.2, 0.2, 0.2) );
     this.program.uniform("MaterialColor").set( vec3f(1, 1, 1) );
@@ -113,7 +93,10 @@ class DoxelGame : Game
   {
     this.program.use();
     this.texture.bind();
-    this.model.draw();
+    foreach(m; this.models)
+    {
+      m.draw();
+    }
     program.unuse();
   }
 }
