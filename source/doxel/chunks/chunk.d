@@ -1,15 +1,24 @@
 import gfm.math;
 
-import iregion, region, baseregion, blocks;
+import iregioncontainer, region, baseregion, blocks;
 
 class Chunk: BaseRegion
 {
   Block[256] blocks;
 
-  this(IRegion container, vec3i site)
+  this(IRegionContainer container, vec3i site)
   {
     super(1, site);
     this.container = container;
+    container.addRegion(this);
+  }
+
+  this(IRegionContainer container, vec3i site, Block block)
+  {
+    super(1, site);
+    this.container = container;
+    blocks[] = block;
+    container.addRegion(this);
   }
 
   this()

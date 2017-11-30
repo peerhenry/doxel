@@ -61,7 +61,7 @@ class InputHandler
     bool u = sdl.keyboard.isPressed(SDLK_SPACE);
     bool d = sdl.keyboard.isPressed(SDLK_LCTRL);
     vec3f movedir = vec3f(0,0,0);
-    float ds = 0.1;
+    float ds = 0.5;
     if(f)
     {
       movedir += cam.direction;

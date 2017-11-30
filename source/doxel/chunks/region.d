@@ -1,15 +1,15 @@
 import gfm.math;
 
-import chunk, iregion, baseregion;
+import chunk, iregion, baseregion, iregioncontainer;
 
-class Region: BaseRegion
+class Region: BaseRegion, IRegionContainer
 {
   IRegion[256] regions;
 
-  this(Region container, vec3i site)
+  this(IRegionContainer container, vec3i site)
   {
-    assert(container.rank > 1);
-    super(container.rank + 1, site);
+    assert(container.getRank() > 2);
+    super(container.getRank() - 1, site);
     this.container = container;
   }
 
@@ -17,22 +17,39 @@ class Region: BaseRegion
   {
     super(subRegion.getRank()+1, vec3i(4,4,2));
     regions[subRegion.getSiteIndex()] = subRegion;
+    subRegion.setContainer(this);
   }
 
-  /// Beware, the coordinates must be in bounds: 0<=i<8, 0<=j<8, 0<=k<4
-  IRegion getRegion(int i, int j, int k)
+  this(int rank)
   {
-    int index = i + 8*j + 64*k;
+    super(rank, vec3i(4,4,2));
+  }
+
+  IRegion getRegion(vec3i site)
+  {
+    int index = site.x + 8*site.y + 64*site.z;
     return regions[index];
   }
 
+  IRegion[] getRegions()
+  {
+    return regions;
+  }
+
+  void addRegion(IRegion region)
+  {
+    regions[region.getSiteIndex()] = region;
+  }
+  import std.stdio;
   /// Creates a chunk if there is none at given coordinate
   IRegion getCreateRegion(vec3i site)
   {
+    writeln("getCreateRegion");
     int index = site.x + 8*site.y + 64*site.z;
     IRegion reg = regions[index];
     if(reg is null)
     {
+      writeln("now going to create a new region...");
       if(rank == 2)
       {
         reg = new Chunk(this, site);

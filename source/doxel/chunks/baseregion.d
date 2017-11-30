@@ -1,10 +1,10 @@
 import gfm.math;
 
-import chunk, iregion;
+import chunk, iregion, iregioncontainer;
 
 abstract class BaseRegion: IRegion
 {
-  IRegion container;
+  IRegionContainer container;
   immutable int rank;
   immutable vec3i site;
 
@@ -19,9 +19,15 @@ abstract class BaseRegion: IRegion
     return rank;
   }
 
-  IRegion getContainer()
+  IRegionContainer getContainer()
   {
     return container;
+  }
+
+  void setContainer(IRegionContainer container)
+  {
+    assert(container.getRank() == this.rank+1);
+    this.container = container;
   }
 
   vec3i getSite()

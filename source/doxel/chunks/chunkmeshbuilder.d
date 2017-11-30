@@ -25,14 +25,17 @@ Mesh!VertexPNT buildChunkMesh(World world, Chunk chunk)
     foreach(sd; allSides) // sd is short for SideDetails
     {
       vec3i adjSite = site + cast(vec3i)sd.normal;
-      bool inBounds = adjSite.x >= 0 && adjSite.x < 8 && adjSite.y >= 0 && adjSite.y < 8 && adjSite.z >= 0 && adjSite.z < 4;
+      bool withinBounds = adjSite.x >= 0 && adjSite.x < 8 && adjSite.y >= 0 && adjSite.y < 8 && adjSite.z >= 0 && adjSite.z < 4;
       Block adjBlock = Block.EMPTY;
-      if(inBounds) adjBlock = chunk.getBlock(adjSite.x, adjSite.y, adjSite.z);
+      if(withinBounds) adjBlock = chunk.getBlock(adjSite.x, adjSite.y, adjSite.z);
       else
       {
         Chunk adjChunk = world.getAdjacentChunk(chunk, sd);
-        adjSite = world.siteModulo(adjSite);
-        adjBlock = adjChunk.getBlock(adjSite.x, adjSite.y, adjSite.z);
+        if(adjChunk !is null)
+        {
+          adjSite = world.siteModulo(adjSite);
+          adjBlock = adjChunk.getBlock(adjSite.x, adjSite.y, adjSite.z);
+        }
       }
 
       if(adjBlock == Block.EMPTY)
@@ -45,8 +48,6 @@ Mesh!VertexPNT buildChunkMesh(World world, Chunk chunk)
       }
     }
   }
-  import std.stdio,std.format;
-  writeln("counted...");
-  writeln(counter);
+  
   return Mesh!VertexPNT(vertices, indices);
 }
