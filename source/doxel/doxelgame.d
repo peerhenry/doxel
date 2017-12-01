@@ -6,7 +6,7 @@ import engine;
 
 import inputhandler, 
     blocks, chunk, region, world, 
-    chunkmodelfactory, worldmodelprovider;
+    chunkmodelfactory, worldmodelprovider, perlin, heightmap;
 
 class DoxelGame : Game
 {
@@ -62,23 +62,70 @@ class DoxelGame : Game
 
   void createModels()
   {
+    int seed = 3;
+    Perlin perlin = new Perlin(seed);
+
+    /*import std.stdio, std.format;
+    auto nA = perlin.getnodes(0.5,0.5);
+    auto nB = perlin.getnodes(1.5,0.5);
+    auto nC = perlin.getnodes(0.5,1.5);
+    auto nD = perlin.getnodes(1.5,1.5);
+    writeln(format!"nodes A are: %s, %s, %s, %s"(nA[0].toString(), nA[1].toString(), nA[2].toString(), nA[3].toString()));
+    writeln(format!"nodes B are: %s, %s, %s, %s"(nB[0].toString(), nB[1].toString(), nB[2].toString(), nB[3].toString()));
+    writeln(format!"nodes C are: %s, %s, %s, %s"(nC[0].toString(), nC[1].toString(), nC[2].toString(), nC[3].toString()));
+    writeln(format!"nodes B are: %s, %s, %s, %s"(nD[0].toString(), nD[1].toString(), nD[2].toString(), nD[3].toString()));
+
+    writeln("noise close below 1,1: ", perlin.noise(0.99,0.99), " noise close above 1,1: ", perlin.noise(1.01,1.01));
+    writeln("dotGridGradient with 1,1 left-under: ", perlin.dotGridGradient(1,1,0.99,0.99)
+    , " right-under 1,1: ", perlin.dotGridGradient(1, 1, 1.01, 0.99)
+    , " left-over 1,1: ", perlin.dotGridGradient(1, 1, 0.99, 1.01)
+    , " right-over 1,1: ", perlin.dotGridGradient(1, 1, 1.01, 1.01)
+    );*/
+
+    HeightMap map = new HeightMap(perlin, 16, 7); // noise, cell size, range
     this.world = new World();
-    for(int i = -20; i<20; i++)
+    for(int i = -64; i<64; i++)
     {
-      for(int j = -20; j<20; j++)
+      for(int j = -64; j<64; j++)
       {
-        //int seed = 12353;
-        //auto rnd = Random(seed);
-        int h = uniform(0, 3);
+        //int h = uniform(0, 2);
+        int h = map.getHeight(i, j);
         world.setBlock(i,j,h,Block.GRASS);
         world.setBlockColumn(i,j,h-1,3,Block.DIRT);
-        world.setBlockColumn(i,j,h-4,10,Block.STONE);
+        world.setBlockColumn(i,j,h-4,-6,Block.STONE);
+
+        if(i%8 == 0 && j%8 == 0)
+        {
+          bool shouldSpawn = uniform(0, 2) == 1;
+          if(shouldSpawn)
+          {
+            int treeHeight = uniform(5, 8);
+            spawnTree(world, i, j, h+1, treeHeight);
+          }
+        }
       }
     }
 
     ModelSetter modelSetter = new PvmNormalMatrixSetter(this.program, this.camera);
     auto chunkFac = new ChunkModelFactory(gl, vertexSpec, modelSetter, world);
     this.provider = new WorldModelProvider(chunkFac, world);
+  }
+
+  void spawnTree(World world, int i, int j, int k, int height)
+  {
+    foreach(ii; -1..2)
+    {
+      foreach(jj; -1..2)
+      {
+        foreach(kk; -1..2)
+        {
+          world.setBlock(i + ii, j + jj, k + height + kk, Block.LEAVES);
+        }
+      }
+    }
+    foreach(h; 0..height){
+      world.setBlock(i,j,k+h,Block.TRUNK);
+    }
   }
 
   void setGlSettings()

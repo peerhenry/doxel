@@ -9,6 +9,8 @@ enum Block: byte
   , DIRT
   , STONE
   , SAND
+  , TRUNK
+  , LEAVES
 }
 
 vec2i getAtlasij(Block block, Side side)
@@ -27,5 +29,10 @@ vec2i getAtlasij(Block block, Side side)
       return vec2i(2, 0);
     case Block.SAND:
       return vec2i(2, 1);
+    case Block.TRUNK:
+      if(side == Side.Top || side == Side.Bottom) return vec2i(5, 1);
+      return vec2i(4, 7); // vec2i(4, 1)
+    case Block.LEAVES:
+      return vec2i(5, 3);
   }
 }

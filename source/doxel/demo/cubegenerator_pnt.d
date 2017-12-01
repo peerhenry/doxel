@@ -20,7 +20,7 @@ class CubeGenerator
   private vec2i[6] getFacesij(Block block)
   {
     vec2i topij, bottomij, northij, southij, westij, eastij;
-    final switch(block)
+    switch(block)
     {
       case Block.GRASS:
         topij = vec2i(0,0);
@@ -36,7 +36,7 @@ class CubeGenerator
       case Block.SAND:
         topij = northij = southij = westij = eastij = bottomij = vec2i(2,1);
         break;
-      case Block.EMPTY:
+      default:
         topij = northij = southij = westij = eastij = bottomij = vec2i(8,8);
         break;
     }
