@@ -82,6 +82,12 @@ class Camera : Updatable
     updateView = true;
   }
 
+  void setPosition(vec3f pos)
+  {
+    this.pos = pos;
+    updateView = true;
+  }
+
   void rotate(float dtheta, float  dphi)
   {
     this.theta += dtheta;
@@ -109,14 +115,8 @@ class Camera : Updatable
     return dir;
   }
 
-  unittest
+  @property vec3f position()
   {
-    // arrange
-    auto cam = new Camera();
-
-    // act
-
-    // assert
-    assert(cam.theta == 0.0);
+    return pos;
   }
 }

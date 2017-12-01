@@ -1,34 +1,51 @@
+import std.algorithm;
 import engine;
-
 import iregion, iregioncontainer, chunk, world, chunkmodelfactory;
 
 class WorldModelProvider
 {
   private ChunkModelFactory modelFac;
+  private Chunk[] chunks;
+  private int nextIndex;
 
-  this(ChunkModelFactory modelFac)
+  this(ChunkModelFactory modelFac, World world)
   {
     this.modelFac = modelFac;
+    this.chunks = getChunks(world.topRegion);
   }
 
-  Model!VertexPNT[] getChunkModels(World world)
+  /// Are there still chunks that have not been converted to models?
+  bool chunksToGo()
   {
-    return getChunkModels(world.topRegion);
+    return nextIndex < chunks.length;
   }
-  import std.stdio;
-  Model!VertexPNT[] getChunkModels(IRegionContainer region)
+
+  Model!VertexPNT[] getNextChunkModels(int amount)
+  {
+    int newNextIndex = min(nextIndex + amount, chunks.length);
+    Model!VertexPNT[] models;
+    foreach(i; nextIndex..newNextIndex) // 0..3 => 0,1,2
+    {
+      Model!VertexPNT newModel = modelFac.generateChunkModel(chunks[i]);
+      models ~= newModel;
+    }
+    nextIndex = newNextIndex;
+    return models;
+  }
+
+  Chunk[] getChunks(IRegionContainer region)
   {
     Model!VertexPNT[] models;
     IRegion[] regions = region.getRegions();
+    Chunk[] chunks;
 
-    if(region.getRank() == 2)
+    if(region.getRank() == 2) // rank 2 means the region is a chunk container
     {
       foreach(reg; regions)
       {
         if(reg !is null)
         {
-          Model!VertexPNT newModel = modelFac.generateChunkModel(cast(Chunk)reg);
-          models ~= newModel;
+          chunks ~= cast(Chunk)reg;
         }
       }
     }
@@ -37,9 +54,9 @@ class WorldModelProvider
       foreach(reg; regions)
       {
         if(reg is null) continue;
-        models ~= getChunkModels(cast(IRegionContainer)reg);
+        chunks ~= getChunks(cast(IRegionContainer)reg);
       }
     }
-    return models;
+    return chunks;
   }
 }

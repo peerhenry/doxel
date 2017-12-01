@@ -13,23 +13,9 @@ class Chunk: BaseRegion
     container.addRegion(this);
   }
 
-  this(IRegionContainer container, vec3i site, Block block)
-  {
-    super(1, site);
-    this.container = container;
-    blocks[] = block;
-    container.addRegion(this);
-  }
-
   this()
   {
     super(1, vec3i(4,4,2));
-  }
-
-  this(Block block)
-  {
-    super(1, vec3i(4,4,2));
-    blocks[] = block;
   }
 
   /// Beware, the coordinates must be in bounds: 0<=i<8, 0<=j<8, 0<=k<4
@@ -43,5 +29,10 @@ class Chunk: BaseRegion
   {
     int index = i + 8*j + 64*k;
     blocks[index] = block;
+  }
+
+  void setAllBlocks(Block block)
+  {
+    blocks[] = block;
   }
 }

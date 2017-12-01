@@ -13,21 +13,18 @@ class World
 
   private void rec(ref vec3i[int] worldSite, int rank, vec3i site)
   {
-    worldSite[rank] = vec3i(
-      site.x < 0 ? 8-(abs(site.x)%8) : site.x%8, 
-      site.y < 0 ? 8-(abs(site.y)%8) : site.y%8, 
-      site.z < 0 ? 4-(abs(site.z)%4) : site.z%4
-    );
+    worldSite[rank] = siteModulo(site);
     if(site.x > 7 || site.y > 7 || site.z > 3 || site.x < 0 || site.y < 0 || site.z < 0)
     {
-      int nextI = site.x < 0 ? 3 + site.x/8 : 4 + site.x/8;
-      int nextJ = site.y < 0 ? 3 + site.y/8 : 4 + site.y/8;
-      int nextK = site.z < 0 ? 1 + site.z/4 : 2 + site.z/4;
-      rec(worldSite, rank+1, vec3i(nextI, nextJ, nextK));
+      vec3i nextSite = vec3i(
+        4 + cast(int)floor((cast(float)site.x)/8),
+        4 + cast(int)floor((cast(float)site.y)/8),
+        2 + cast(int)floor((cast(float)site.z)/4)
+      );
+      rec(worldSite, rank+1, nextSite);
     }
   }
 
-  import std.stdio, std.format;
   vec3i[int] getWorldSite(vec3i site)
   {
     vec3i[int] worldSite;
@@ -35,7 +32,30 @@ class World
     return worldSite;
   }
 
-  void addChunk(vec3i site, Block block)
+  /// Add a column of blocks to the world
+  void setBlockColumn(int i, int j, int k, int depth, Block block)
+  {
+    foreach(d; 0..depth)
+    {
+      setBlock(i, j, k-d, block);
+    }
+  }
+
+  /// sets a block in the world
+  /// coordinates ijk are relative to the central chunk
+  void setBlock(int i, int j, int k, Block block)
+  {
+    vec3i chunkSite = vec3i(
+      4 + cast(int)floor((cast(float)i)/8),
+      4 + cast(int)floor((cast(float)j)/8),
+      2 + cast(int)floor((cast(float)k)/4)
+    );
+    Chunk chunk = getCreateChunk(chunkSite);
+    vec3i blockSite = siteModulo(vec3i(i,j,k));
+    chunk.setBlock(blockSite.x, blockSite.y, blockSite.z, block);
+  }
+
+  Chunk getCreateChunk(vec3i site)
   {
     // dictionary with int keys and vec3i values.
     vec3i[int] worldSite = getWorldSite(site);
@@ -43,8 +63,8 @@ class World
     while(true)
     {
       vec3i lesite = worldSite[maxRank];
-      string msg = format!"rank: %s site: (%s, %s, %s)"(maxRank, lesite.x, lesite.y, lesite.z);
-      writeln( msg );
+      // string msg = format!"rank: %s site: (%s, %s, %s)"(maxRank, lesite.x, lesite.y, lesite.z); // DEBUG
+      // writeln( msg );
 
       if( ((maxRank + 1) in worldSite) is null ) break;
       maxRank++;
@@ -66,22 +86,23 @@ class World
       else
       {
         vec3i regSite = worldSite[container.getRank() - 1];
-        writeln(format!"now using worldSite to access a region of rank %s regSite: %s"((container.getRank() - 1), regSite.toString()));
+        // writeln(format!"now using worldSite to access a region of rank %s regSite: %s"((container.getRank() - 1), regSite.toString())); // DEBUG
         container = cast(IRegionContainer) container.getCreateRegion(regSite);
       }
     }
-
-    if(container.getRegion(worldSite[1]) is null)
+    auto chunk = container.getRegion(worldSite[1]);
+    if(chunk is null)
     {
-      writeln(format!"now creating chunk in world with container site %s"(container.getSite().toString()));
-      new Chunk(container, worldSite[1], block);
+      // writeln(format!"now creating chunk in world with container site %s"(container.getSite().toString())); // DEBUG
+      return new Chunk(container, worldSite[1]);
     }
     else
     {
-      string msg1 = format!"NOT creating chunk in region: %s site: %s"(container.getRank(), container.getSite().toString());
+      /*string msg1 = format!"NOT creating chunk in region: %s site: %s"(container.getRank(), container.getSite().toString());
       string msg2 = format!"Chunk would have had site: %s"(worldSite[1].toString());
       writeln( msg1 );
-      writeln( msg2 );
+      writeln( msg2 );*/
+      return cast(Chunk) chunk;
     }
   }
 
@@ -94,12 +115,12 @@ class World
   pure vec3i siteModulo(vec3i site)
   {
     vec3i newSite = site;
-    if(newSite.x >= 8) newSite.x = newSite.x % 8;
-    else while(newSite.x < 0) newSite.x += 8;
-    if(newSite.y >= 8) newSite.y = newSite.y % 8;
-    else while(newSite.y < 0) newSite.y += 8;
-    if(newSite.z >= 4) newSite.z = newSite.z % 4;
-    else while(newSite.z < 0) newSite.z += 4;
+    newSite.x = newSite.x % 8;
+    if(newSite.x < 0) newSite.x += 8;
+    newSite.y = newSite.y % 8;
+    if(newSite.y < 0) newSite.y += 8;
+    newSite.z = newSite.z % 4;
+    if(newSite.z < 0) newSite.z += 4;
     return newSite;
   }
 

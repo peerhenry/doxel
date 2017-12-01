@@ -4,7 +4,7 @@ import gfm.math, gfm.opengl;
 
 import engine;
 
-import chunk, chunkmeshbuilder, world, iregioncontainer;
+import chunk, chunkmodel, chunkmeshbuilder, world, iregioncontainer;
 
 class ChunkModelFactory
 {
@@ -21,10 +21,10 @@ class ChunkModelFactory
     this.world = world;
   }
 
-  Model!VertexPNT generateChunkModel(Chunk chunk)
+  ChunkModel generateChunkModel(Chunk chunk)
   {
     Mesh!VertexPNT mesh = buildChunkMesh(this.world, chunk);
-    Model!VertexPNT model = new Model!VertexPNT(gl, setter, spec, mesh);
+    ChunkModel model = new ChunkModel(gl, setter, spec, mesh, chunk);
     vec3i site = chunk.getSite();
     vec3f location = vec3f((site.x-4)*8.0, (site.y-4)*8.0, (site.z-2)*4.0);
     IRegionContainer container = chunk.getContainer();

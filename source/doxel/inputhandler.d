@@ -1,6 +1,6 @@
 import gfm.math, gfm.sdl2;
-
 import engine;
+import doxelgame;
 
 class InputHandler
 {
@@ -10,6 +10,7 @@ class InputHandler
     int prev_x;
     int prev_y;
     Camera cam;
+    DoxelGame game;
   }
 
   this(Context context, Camera cam)
@@ -17,6 +18,12 @@ class InputHandler
     this.sdl = context.sdl;
     this.cam = cam;
     this.sdl.mouse.startCapture();
+    SDL_SetRelativeMouseMode(true);
+  }
+
+  void setGame(DoxelGame game)
+  {
+    this.game = game;
   }
 
   void update()
@@ -26,6 +33,12 @@ class InputHandler
   }
 
   void updateMouse()
+  {
+    updateMouseMovement();
+    updateMouseClicks();
+  }
+
+  void updateMouseMovement()
   {
     int new_x = sdl.mouse.x;
     int new_y = sdl.mouse.y;
@@ -50,6 +63,16 @@ class InputHandler
     }
     this.prev_x = new_x;
     this.prev_y = new_y;
+  }
+
+  void updateMouseClicks()
+  {
+    // Check if the left mouse button is pressed
+    if(sdl.mouse.isButtonPressed(SDL_BUTTON_LMASK))
+    {
+      // cast ray into world, collide with chunk, collide with cube, remove cube
+      game.clickRemoveBlock();
+    }
   }
 
   void updateKeys()

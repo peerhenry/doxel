@@ -1,6 +1,4 @@
-module doxel.doxelgame;
-
-import std.array, std.stdio;
+import std.array, std.stdio, std.random;
 
 import gfm.opengl, gfm.math, gfm.sdl2;
 
@@ -20,13 +18,19 @@ class DoxelGame : Game
   VertexSpecification!VertexPNT vertexSpec;
   Texture texture;
 
+  World world;
+  WorldModelProvider provider;
+
   this(OpenGL gl, InputHandler input, Camera camera)
   {
     this.gl = gl;
     this.input = input;
+    input.setGame(this);
     this.camera = camera;
+    camera.setPosition(vec3f(0,0,10));
     this.createProgram();
     this.texture = new Texture(gl, this.program, "Atlas", "atlas.png"); // gl, program, shader uniform name, image path
+    //this.texture = new Texture(gl, this.program, "Skybox", "skybox.png"); // gl, program, shader uniform name, image path
   }
 
   ~this()
@@ -58,23 +62,23 @@ class DoxelGame : Game
 
   void createModels()
   {
-    auto world = new World();
-    for(int i = 0; i<15; i++)
+    this.world = new World();
+    for(int i = -20; i<20; i++)
     {
-      for(int j = 0; j<15; j++)
+      for(int j = -20; j<20; j++)
       {
-        for(int k = -2; k<0; k++)
-        {
-          world.addChunk(vec3i(i,j,k), Block.STONE);
-        }
-        world.addChunk(vec3i(i,j,0), Block.GRASS);
+        //int seed = 12353;
+        //auto rnd = Random(seed);
+        int h = uniform(0, 3);
+        world.setBlock(i,j,h,Block.GRASS);
+        world.setBlockColumn(i,j,h-1,3,Block.DIRT);
+        world.setBlockColumn(i,j,h-4,10,Block.STONE);
       }
     }
 
     ModelSetter modelSetter = new PvmNormalMatrixSetter(this.program, this.camera);
     auto chunkFac = new ChunkModelFactory(gl, vertexSpec, modelSetter, world);
-    WorldModelProvider worldModelProvider = new WorldModelProvider(chunkFac);
-    models = worldModelProvider.getChunkModels(world);
+    this.provider = new WorldModelProvider(chunkFac, world);
   }
 
   void setGlSettings()
@@ -97,10 +101,21 @@ class DoxelGame : Game
     this.texture.bind();
   }
 
+  void clickRemoveBlock()
+  {
+    vec3f campos = camera.position;
+    vec3f camdir = camera.direction;
+    // calculate line intersection with chunk, and then with block
+  }
+
   void update()
   {
     input.update();
     camera.update();
+    if(provider.chunksToGo())
+    {
+      models ~= provider.getNextChunkModels(10);
+    }
   }
 
   void draw()

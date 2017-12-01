@@ -5,7 +5,7 @@ import gfm.opengl, gfm.sdl2;
 
 import engine;
 
-import doxel.doxelgame, inputhandler;
+import doxelgame, inputhandler;
 
 void main()
 {

@@ -40,16 +40,14 @@ class Region: BaseRegion, IRegionContainer
   {
     regions[region.getSiteIndex()] = region;
   }
-  import std.stdio;
+
   /// Creates a chunk if there is none at given coordinate
   IRegion getCreateRegion(vec3i site)
-  {
-    writeln("getCreateRegion");
+  {  
     int index = site.x + 8*site.y + 64*site.z;
     IRegion reg = regions[index];
     if(reg is null)
     {
-      writeln("now going to create a new region...");
       if(rank == 2)
       {
         reg = new Chunk(this, site);
