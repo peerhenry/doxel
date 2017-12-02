@@ -9,7 +9,7 @@ uniform mat4 View;
 
 void main()
 {
-  gl_position = Projection * View * vec4(position, 1.0);
+  gl_Position = Projection * View * vec4(position, 1.0);
   texCoord = position;
 }
 #endif
@@ -22,6 +22,6 @@ uniform samplerCube cubeMap;
 
 void main()
 {
-  color = texture(cubeMap, textureCoords);
+  color = texture(cubeMap, texCoord);
 }
 #endif

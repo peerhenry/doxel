@@ -6,7 +6,7 @@ import engine;
 
 import inputhandler, 
     blocks, chunk, region, world, 
-    chunkobjectfactory, worldobjectprovider, perlin, heightmap;
+    chunkobjectfactory, worldobjectprovider, perlin, heightmap, skybox;
 
 class DoxelGame : Game
 {
@@ -17,6 +17,7 @@ class DoxelGame : Game
   InputHandler input;
   VertexSpecification!VertexPNT vertexSpec;
   Texture texture;
+  Skybox skybox;
 
   World world;
   WorldObjectProvider provider;
@@ -28,9 +29,9 @@ class DoxelGame : Game
     input.setGame(this);
     this.camera = camera;
     camera.setPosition(vec3f(0,0,10));
+    this.skybox = new Skybox(gl, camera);
     this.createProgram();
     this.texture = new Texture(gl, this.program, "Atlas", "atlas.png"); // gl, program, shader uniform name, image path
-    //this.texture = new Texture(gl, this.program, "Skybox", "skybox.png"); // gl, program, shader uniform name, image path
   }
 
   ~this()
@@ -42,6 +43,7 @@ class DoxelGame : Game
       m.destroy;
     }
     this.texture.destroy;
+    this.skybox.destroy;
   }
 
   /// Creates a shader program 
@@ -65,28 +67,14 @@ class DoxelGame : Game
     int seed = 3;
     Perlin perlin = new Perlin(seed);
 
-    /*import std.stdio, std.format;
-    auto nA = perlin.getnodes(0.5,0.5);
-    auto nB = perlin.getnodes(1.5,0.5);
-    auto nC = perlin.getnodes(0.5,1.5);
-    auto nD = perlin.getnodes(1.5,1.5);
-    writeln(format!"nodes A are: %s, %s, %s, %s"(nA[0].toString(), nA[1].toString(), nA[2].toString(), nA[3].toString()));
-    writeln(format!"nodes B are: %s, %s, %s, %s"(nB[0].toString(), nB[1].toString(), nB[2].toString(), nB[3].toString()));
-    writeln(format!"nodes C are: %s, %s, %s, %s"(nC[0].toString(), nC[1].toString(), nC[2].toString(), nC[3].toString()));
-    writeln(format!"nodes B are: %s, %s, %s, %s"(nD[0].toString(), nD[1].toString(), nD[2].toString(), nD[3].toString()));
-
-    writeln("noise close below 1,1: ", perlin.noise(0.99,0.99), " noise close above 1,1: ", perlin.noise(1.01,1.01));
-    writeln("dotGridGradient with 1,1 left-under: ", perlin.dotGridGradient(1,1,0.99,0.99)
-    , " right-under 1,1: ", perlin.dotGridGradient(1, 1, 1.01, 0.99)
-    , " left-over 1,1: ", perlin.dotGridGradient(1, 1, 0.99, 1.01)
-    , " right-over 1,1: ", perlin.dotGridGradient(1, 1, 1.01, 1.01)
-    );*/
-
-    HeightMap map = new HeightMap(perlin, 16, 7); // noise, cell size, range
+    int cellSize = 32;
+    int depthRange = 16;
+    HeightMap map = new HeightMap(perlin, cellSize, depthRange); // noise, cell size, range
     this.world = new World();
-    for(int i = -64; i<64; i++)
+    int size = 128;
+    for(int i = -size; i<size; i++)
     {
-      for(int j = -64; j<64; j++)
+      for(int j = -size; j<size; j++)
       {
         //int h = uniform(0, 2);
         int h = map.getHeight(i, j);
@@ -99,7 +87,7 @@ class DoxelGame : Game
           bool shouldSpawn = uniform(0, 2) == 1;
           if(shouldSpawn)
           {
-            int treeHeight = uniform(5, 8);
+            int treeHeight = uniform(4, 7);
             spawnTree(world, i, j, h+1, treeHeight);
           }
         }
@@ -133,6 +121,7 @@ class DoxelGame : Game
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
+    glDisable(GL_CULL_FACE);
     glFrontFace(GL_CW); // clockwise faces are front
     glClearColor(100.0/255, 149.0/255, 237.0/255, 1.0); // cornflower blue
   }
@@ -172,6 +161,7 @@ class DoxelGame : Game
 
   void draw()
   {
+    skybox.draw();
     this.program.use();
     this.texture.bind();
     foreach(obj; this.gameObjects)

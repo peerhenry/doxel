@@ -57,4 +57,9 @@ class Model(VertexType) : Drawable
     );
     this.vao.unbind();
   }
+
+  GLVAO getVAO()
+  {
+    return vao;
+  }
 }

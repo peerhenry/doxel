@@ -119,4 +119,7 @@ class Camera : Updatable
   {
     return pos;
   }
+
+  float getTheta(){return theta;}
+  float getPhi(){return phi;}
 }
