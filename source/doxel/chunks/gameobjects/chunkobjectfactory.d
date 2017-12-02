@@ -7,10 +7,10 @@ class ChunkObjectFactory
 {
   private Camera camera;
   private IChunkModelFactory modelFactory;
-  private UniformSetter!mat4f uniformSetter;
+  private UniformSetter uniformSetter;
   private Limiter limiter;
 
-  this(Camera camera, IChunkModelFactory modelFactory, UniformSetter!mat4f uniformSetter, Limiter limiter)
+  this(Camera camera, IChunkModelFactory modelFactory, UniformSetter uniformSetter, Limiter limiter)
   {
     this.camera = camera;
     this.modelFactory = modelFactory;
@@ -33,8 +33,7 @@ class ChunkObjectFactory
       container = container.getContainer();
     }
     mat4f modelMatrix = mat4f.translation(location);
-    Mat4fSetAction uniformSetAction = new Mat4fSetAction(uniformSetter, modelMatrix);
-    ChunkGameObject chunkObject = new ChunkGameObject(null, uniformSetAction, null);
+    ChunkGameObject chunkObject = new ChunkGameObject(null, uniformSetter, null, modelMatrix); // updater, uniformsetter, drawbehavior, modelmatrix
     chunkObject.chunk = chunk;
     Updatable chunkUpdateBehavior = new ChunkUpdateBehavior(camera, chunkObject, modelFactory, limiter);
     chunkObject.setUpdateBehavior(chunkUpdateBehavior);

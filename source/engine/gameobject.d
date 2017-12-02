@@ -1,23 +1,28 @@
+import gfm.math;
 import engine.interfaces;
 
 class GameObject : Updatable, Drawable
 {
   Updatable updateBehavior;
-  UniformSetAction uniformSetBehavior;
+  UniformSetter uniformSetBehavior;
   Drawable drawBehavior;
+  mat4f modelMatrix;
 
-  this(Updatable updateBehavior, UniformSetAction uniformSetBehavior, Drawable drawBehavior)
+  this(Updatable updateBehavior, UniformSetter uniformSetBehavior, Drawable drawBehavior, mat4f modelMatrix)
   {
     if(updateBehavior is null) this.updateBehavior = new DefaultUpdate();
     else this.updateBehavior = updateBehavior;
     this.uniformSetBehavior = uniformSetBehavior;
     if(drawBehavior is null) this.drawBehavior = new DefaultDraw();
     else this.drawBehavior = drawBehavior;
+    this.modelMatrix = modelMatrix;
   }
 
-  this(UniformSetAction uniformSetBehavior, Drawable drawBehavior)
+  ~this()
   {
-    this(null, uniformSetBehavior, drawBehavior);
+    if(updateBehavior !is null) updateBehavior.destroy;
+    if(uniformSetBehavior !is null) uniformSetBehavior.destroy;
+    if(drawBehavior !is null) drawBehavior.destroy;
   }
 
   void update()
@@ -27,7 +32,7 @@ class GameObject : Updatable, Drawable
 
   void draw()
   {
-    this.uniformSetBehavior.setUniforms();
+    this.uniformSetBehavior.setUniforms(this);
     this.drawBehavior.draw();
   }
 
@@ -41,6 +46,13 @@ class GameObject : Updatable, Drawable
   Drawable getDrawBehavior()
   {
     return drawBehavior;
+  }
+
+  //box3!float getBoundingBox();
+
+  mat4f getModelMatrix()
+  {
+    return this.modelMatrix;
   }
 
   // setters

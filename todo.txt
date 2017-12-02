@@ -1,0 +1,17 @@
+todo:
+
+frustum culling
+read settings from config file
+chunk column loading should start at the center of player
+block deletion
+inventory system
+block addition
+first person (movement, jumping, collision detection)
+translucent water (2 render calls for chunks containing water)
+FPS counter
+chunk model generation performance measurment and improvement
+shadow mapping
+make region coordinate system is variable (not just 8-8-4)
+put rendering and world loading on different threads
+distant chunk rendering
+infinite world depth

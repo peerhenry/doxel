@@ -42,6 +42,7 @@ class ChunkMeshBuilder
       vec3i site = siteIndexToSite(i);
       foreach(sd; allSides) // sd is short for SideDetails
       {
+        if(sd.side == Side.Bottom) continue;
         vec3i adjSite = site + cast(vec3i)sd.normal;
         bool withinBounds = adjSite.x >= 0 && adjSite.x < 8 && adjSite.y >= 0 && adjSite.y < 8 && adjSite.z >= 0 && adjSite.z < 4;
         Block adjBlock = Block.EMPTY;

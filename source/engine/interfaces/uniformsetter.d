@@ -1,4 +1,5 @@
-interface UniformSetter(utype)
+import gameobject;
+interface UniformSetter
 {
-  void setUniform(utype uniform);
+  void setUniforms(GameObject gameobject);
 }

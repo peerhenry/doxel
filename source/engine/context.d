@@ -81,7 +81,9 @@ class Context
       window.swapBuffers();
 
       shouldQuit = sdl.keyboard.isPressed(SDLK_ESCAPE);
-      Thread.sleep( dur!("msecs")( 16 ) );
+
+      long sleeptime = 16 - cast(long)dt;
+      if(sleeptime > 0) Thread.sleep( dur!("msecs")( sleeptime ) );
     }
   }
 }

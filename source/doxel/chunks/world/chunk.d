@@ -45,6 +45,13 @@ class Chunk: BaseRegion
     return worldSite;
   }
 
+  vec3f getPositionFromWorldCenter()
+  {
+    vec3i[int] worldSiteRef;
+    worldSiteRef[1] = vec3i(4,4,2);
+    return getRelativePositionFrom(worldSiteRef);
+  }
+
   /// get this chunks position relative to given chunk.
   vec3f getRelativePositionFrom(Chunk chunk)
   {

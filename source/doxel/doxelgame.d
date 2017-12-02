@@ -98,7 +98,7 @@ class DoxelGame : Game
 
     ChunkMeshBuilder meshBuilder = new ChunkMeshBuilder(world);
     ChunkModelFactory modelFactory = new ChunkModelFactory(gl, vertexSpec, meshBuilder);
-    UniformSetter!mat4f modelSetter = new PvmNormalMatrixSetter(this.program, this.camera, "PVM", "NormalMatrix"); // strings are uniform names in shader
+    UniformSetter modelSetter = new PvmNormalMatrixSetter(this.program, this.camera, "PVM", "NormalMatrix"); // strings are uniform names in shader
     this.limiter = new Limiter(15);
     auto chunkFac = new ChunkObjectFactory(this.camera, modelFactory, modelSetter, limiter);
     this.generator = new WorldSurfaceChunkGenerator(world, heightMap, chunkFac);
@@ -186,8 +186,10 @@ class DoxelGame : Game
     skybox.draw();
     this.program.use();
     this.texture.bind();
+    //mat4f PV = camera.projection*camera.view;
     foreach(obj; this.gameObjects)
     {
+      //mat4f modelMatrix = obj.getModelMatrix();
       obj.draw();
     }
     program.unuse();
