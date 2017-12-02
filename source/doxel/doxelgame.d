@@ -1,11 +1,8 @@
 import std.array, std.stdio, std.random;
-
 import gfm.opengl, gfm.math, gfm.sdl2;
-
 import engine;
-
 import inputhandler, 
-    blocks, chunk, region, world, skybox,
+    blocks, chunk, region, world, skybox, quadoverlay, limiter,
     chunkmeshbuilder, chunkmodelfactory, chunkobjectfactory, chunkgameobject,
     perlin, heightmap, worldsurfacechunkgenerator;
 
@@ -21,18 +18,38 @@ class DoxelGame : Game
   Skybox skybox;
 
   World world;
+  Limiter limiter;
   WorldSurfaceChunkGenerator generator;
 
-  this(OpenGL gl, InputHandler input, Camera camera)
+  SDLTTF ttf;
+  SDLFont font;
+  SDL2Surface surface;
+  SDL2Texture sdlTexture;
+  SDL2Renderer renderer;
+
+  QuadOverlay quadModel;
+
+  this(Context context, InputHandler input, Camera camera)
   {
-    this.gl = gl;
+    this.gl = context.gl;
     this.input = input;
     input.setGame(this);
     this.camera = camera;
     camera.setPosition(vec3f(0,0,10));
     this.skybox = new Skybox(gl, camera);
     this.createProgram();
-    this.texture = new Texture(gl, this.program, "Atlas", "atlas.png"); // gl, program, shader uniform name, image path
+    this.texture = new Texture(gl, this.program, "Atlas", "resources/atlas.png"); // gl, program, shader uniform name, image path
+
+    // load font
+    /*this.ttf = new SDLTTF(context.sdl);
+    this.font = new SDLFont(this.ttf, "resources/fonts/consola.ttf", 14);
+    this.surface = this.font.renderTextSolid("HIHAHO YOYOYOYOYOYO", SDL_Color(0,0,0,255));
+    this.renderer = new SDL2Renderer(surface);
+    this.sdlTexture = new SDL2Texture(renderer, surface);
+    this.surface.destroy;
+    this.font.destroy;*/
+
+    this.quadModel = new QuadOverlay(gl);
   }
 
   ~this()
@@ -45,6 +62,12 @@ class DoxelGame : Game
     }
     this.texture.destroy;
     this.skybox.destroy;
+
+    /*this.ttf.destroy;
+    this.renderer.destroy;
+    this.sdlTexture.destroy;
+    //this.surface.destroy;
+    //this.font.destroy;*/
   }
 
   /// Creates a shader program 
@@ -68,15 +91,16 @@ class DoxelGame : Game
     int seed = 3;
     Perlin perlin = new Perlin(seed);
 
-    int cellSize = 32;
-    int depthRange = 16;
+    int cellSize = 128;
+    int depthRange = 64;
     HeightMap heightMap = new HeightMap(perlin, cellSize, depthRange); // noise, cell size, range
     this.world = new World();
 
     ChunkMeshBuilder meshBuilder = new ChunkMeshBuilder(world);
     ChunkModelFactory modelFactory = new ChunkModelFactory(gl, vertexSpec, meshBuilder);
     UniformSetter!mat4f modelSetter = new PvmNormalMatrixSetter(this.program, this.camera, "PVM", "NormalMatrix"); // strings are uniform names in shader
-    auto chunkFac = new ChunkObjectFactory(this.camera, modelFactory, modelSetter);
+    this.limiter = new Limiter(15);
+    auto chunkFac = new ChunkObjectFactory(this.camera, modelFactory, modelSetter, limiter);
     this.generator = new WorldSurfaceChunkGenerator(world, heightMap, chunkFac);
   }
 
@@ -122,6 +146,7 @@ class DoxelGame : Game
 
   void update()
   {
+    limiter.reset();
     input.update();
     camera.update();
 
@@ -133,9 +158,10 @@ class DoxelGame : Game
       cast(int)floor(camera.position.y/8)
     );
 
-    foreach(ii; -15 .. 16)
+    int creationRange = 26;
+    foreach(ii; -creationRange .. creationRange)
     {
-      foreach(jj; -15 .. 16)
+      foreach(jj; -creationRange .. creationRange)
       {
         vec2i next_ij = centerRel_ij + vec2i(ii, jj);
         if(!hasBeenVisited(next_ij))
@@ -153,6 +179,8 @@ class DoxelGame : Game
     }
   }
 
+
+
   void draw()
   {
     skybox.draw();
@@ -163,5 +191,13 @@ class DoxelGame : Game
       obj.draw();
     }
     program.unuse();
+
+    /*renderer.clear();
+    renderer.copy(sdlTexture, 10, 10);
+    renderer.present();*/
+    
+    //glBindTexture(GL_TEXTURE_2D, sdlTexture.access());
+    //glColor3f(1, 0, 0);
+    //quadModel.draw();
   }
 }

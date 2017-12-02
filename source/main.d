@@ -11,8 +11,8 @@ void main()
 
 void run()
 {
-	int width = 1600;
-	int height = 900;
+	int width = 1920;
+	int height = 1080;
 	Context context = new Context(width, height, "Doxel");
 	scope(exit) context.destroy;
 

@@ -36,12 +36,12 @@ class Skybox
   void loadSkybox()
   {
     this.texture = new CubeMap(gl, program, "cubeMap"
-    , "skybox/top.png"
-    , "skybox/bottom.png"
-    , "skybox/front.png"
-    , "skybox/back.png"
-    , "skybox/left.png"
-    , "skybox/right.png");
+    , "resources/skybox/top.png"
+    , "resources/skybox/bottom.png"
+    , "resources/skybox/front.png"
+    , "resources/skybox/back.png"
+    , "resources/skybox/left.png"
+    , "resources/skybox/right.png");
     this.texture.bind();
   }
 

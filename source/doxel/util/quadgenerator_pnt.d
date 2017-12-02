@@ -1,4 +1,4 @@
-import gfm.math;
+import gfm.opengl, gfm.math;
 
 import engine;
 

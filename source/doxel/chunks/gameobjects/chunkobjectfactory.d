@@ -1,19 +1,21 @@
 import std.math;
 import gfm.math, gfm.opengl;
 import engine;
-import chunk, chunkgameobject, ichunkmodelfactory, iregioncontainer, chunkupdatebehavior;
+import chunk, chunkgameobject, ichunkmodelfactory, iregioncontainer, chunkupdatebehavior, limiter;
 
 class ChunkObjectFactory
 {
   private Camera camera;
   private IChunkModelFactory modelFactory;
   private UniformSetter!mat4f uniformSetter;
+  private Limiter limiter;
 
-  this(Camera camera, IChunkModelFactory modelFactory, UniformSetter!mat4f uniformSetter)
+  this(Camera camera, IChunkModelFactory modelFactory, UniformSetter!mat4f uniformSetter, Limiter limiter)
   {
     this.camera = camera;
     this.modelFactory = modelFactory;
     this.uniformSetter = uniformSetter;
+    this.limiter = limiter;
   }
 
   ChunkGameObject createChunkObject(Chunk chunk)
@@ -34,7 +36,7 @@ class ChunkObjectFactory
     Mat4fSetAction uniformSetAction = new Mat4fSetAction(uniformSetter, modelMatrix);
     ChunkGameObject chunkObject = new ChunkGameObject(null, uniformSetAction, null);
     chunkObject.chunk = chunk;
-    Updatable chunkUpdateBehavior = new ChunkUpdateBehavior(camera, chunkObject, modelFactory);
+    Updatable chunkUpdateBehavior = new ChunkUpdateBehavior(camera, chunkObject, modelFactory, limiter);
     chunkObject.setUpdateBehavior(chunkUpdateBehavior);
     return chunkObject;
   }

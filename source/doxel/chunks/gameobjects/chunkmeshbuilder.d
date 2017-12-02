@@ -23,6 +23,13 @@ class ChunkMeshBuilder
     this.world = world;
   }
 
+  bool isTranslucent(Block block)
+  {
+    if(block == Block.EMPTY) return true;
+    if(block == Block.WATER) return true;
+    return false;
+  }
+
   ChunkMesh buildChunkMesh(Chunk chunk)
   {
     VertexPNT[] vertices;
@@ -49,9 +56,12 @@ class ChunkMeshBuilder
           }
         }
 
-        if(adjBlock == Block.EMPTY)
+        bool shouldAddQuad = isTranslucent(block) ? adjBlock == Block.EMPTY : isTranslucent(adjBlock);
+
+        if(shouldAddQuad)
         {
-          vec3f faceCenter = vec3f(site.x + 0.5*(1 + sd.normal.x), site.y + 0.5*(1 + sd.normal.y), site.z + 0.5*(1 + sd.normal.z));
+          vec3f quadCenter = (block == Block.WATER && sd.side == Side.Top) ? vec3f(0, 0, 0.85) : sd.normal;
+          vec3f faceCenter = vec3f(site.x + 0.5*(1 + quadCenter.x), site.y + 0.5*(1 + quadCenter.y), site.z + 0.5*(1 + quadCenter.z));
           vertices ~= generateQuad(sd.side, faceCenter, getAtlasij(block, sd.side));
           uint li = 0;
           if(indices.length > 0) li = indices[indices.length-1]+1;

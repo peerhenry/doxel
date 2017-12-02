@@ -11,6 +11,7 @@ enum Block: byte
   , SAND
   , TRUNK
   , LEAVES
+  , WATER
 }
 
 vec2i getAtlasij(Block block, Side side)
@@ -34,5 +35,7 @@ vec2i getAtlasij(Block block, Side side)
       return vec2i(4, 7); // vec2i(4, 1)
     case Block.LEAVES:
       return vec2i(5, 3);
+    case Block.WATER:
+      return vec2i(15, 12);
   }
 }

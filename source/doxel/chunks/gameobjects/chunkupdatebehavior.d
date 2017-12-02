@@ -1,29 +1,34 @@
 import std.math;
 import gfm.math, gfm.opengl;
 import engine;
-import chunk, chunkgameobject, ichunkmodelfactory;
+import chunk, chunkgameobject, ichunkmodelfactory, limiter;
 
 class ChunkUpdateBehavior: Updatable
 {
   private ChunkGameObject chunkObject;
   private Camera camera;
   private IChunkModelFactory modelFactory;
+  private Limiter limiter;
+  private static const LOAD_RANGE = 200;
+  private static const LOAD_RANGE_SQUARED = LOAD_RANGE*LOAD_RANGE;
+  private static const UNLOAD_RANGE_SQUARED = (LOAD_RANGE+50)*(LOAD_RANGE+50);
 
-  this(Camera camera, ChunkGameObject chunkObject, IChunkModelFactory modelFactory)
+  this(Camera camera, ChunkGameObject chunkObject, IChunkModelFactory modelFactory, Limiter limiter)
   {
     this.camera = camera;
     this.chunkObject = chunkObject;
     this.modelFactory = modelFactory;
+    this.limiter = limiter;
   }
 
   private bool chunkIsWithinLoadRange()
   {
-    return squaredDistanceFromCam() < 100*100;
+    return squaredDistanceFromCam() < LOAD_RANGE_SQUARED;
   }
 
   private bool chunkIsOutsideUnloadRange()
   {
-    return squaredDistanceFromCam() > 150*150;
+    return squaredDistanceFromCam() > UNLOAD_RANGE_SQUARED;
   }
 
   private float squaredDistanceFromCam()
@@ -43,11 +48,12 @@ class ChunkUpdateBehavior: Updatable
   {
     if(chunkIsWithinLoadRange())
     {
-      if(cast(DefaultDraw)chunkObject.getDrawBehavior() !is null)
+      if(cast(DefaultDraw)chunkObject.getDrawBehavior() !is null && !limiter.limitReached())
       {
         chunkObject.getDrawBehavior().destroy;
         VertexModel model = modelFactory.createModel(chunkObject.chunk);
         chunkObject.setDrawBehavior(model);
+        limiter.increment();
       }
     }
     else if(chunkIsOutsideUnloadRange())

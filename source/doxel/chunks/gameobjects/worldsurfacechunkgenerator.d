@@ -29,13 +29,20 @@ class WorldSurfaceChunkGenerator
         int block_i = (centerRel_ij.x)*8 + ii;
         int block_j = (centerRel_ij.y)*8 + jj;
         int h = heightMap.getHeight(block_i, block_j);
-        world.setBlock(block_i, block_j, h, Block.GRASS);
+        world.setBlock(block_i, block_j, h, h<0 ? Block.SAND : Block.GRASS);
         world.setBlockColumn(block_i, block_j, h-1, 2, Block.DIRT);
         world.setBlockColumn(block_i, block_j, h-3, 2, Block.STONE);
-        if(withTree && ii == tree_i && jj == tree_j)
+        if(withTree && ii == tree_i && jj == tree_j && h > 0)
         {
           spawnTree(block_i, block_j, h+1, uniform(3,6,random));
           withTree = false;
+        }
+        if(h<-3)
+        {
+          foreach(nn; h..-2)
+          {
+            world.setBlock(block_i, block_j, nn, Block.WATER);
+          }
         }
       }
     }
@@ -57,12 +64,18 @@ class WorldSurfaceChunkGenerator
     {
       foreach(jj; -1..2)
       {
-        foreach(kk; -1..2)
+        foreach(kk; -1..1)
         {
           world.setBlock(i + ii, j + jj, k + height + kk, Block.LEAVES);
         }
       }
     }
+    // + cross at top of tree
+    world.setBlock(i -1, j, k + height + 1, Block.LEAVES);
+    world.setBlock(i, j, k + height + 1, Block.LEAVES);
+    world.setBlock(i + 1, j, k + height + 1, Block.LEAVES);
+    world.setBlock(i, j -1, k + height + 1, Block.LEAVES);
+    world.setBlock(i, j + 1, k + height + 1, Block.LEAVES);
     foreach(h; 0..height)
     {
       world.setBlock(i,j,k+h,Block.TRUNK);
