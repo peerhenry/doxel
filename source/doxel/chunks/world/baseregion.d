@@ -26,6 +26,7 @@ abstract class BaseRegion: IRegion
 
   void setContainer(IRegionContainer container)
   {
+    assert(container !is null);
     assert(container.getRank() == this.rank+1);
     this.container = container;
   }

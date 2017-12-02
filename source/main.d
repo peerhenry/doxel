@@ -1,10 +1,7 @@
 import std.stdio, std.typecons;
-
 import poodinis;
 import gfm.opengl, gfm.sdl2;
-
 import engine;
-
 import doxelgame, inputhandler;
 
 void main()
@@ -24,6 +21,7 @@ void run()
 
 	auto container = new shared DependencyContainer();
 
+	// register dependencies
 	container.register!OpenGL.existingInstance(context.gl);
 	container.register!Context.existingInstance(context);
 	container.register!Camera.existingInstance(cam);
@@ -32,6 +30,5 @@ void run()
 
 	Game game = container.resolve!Game;
 	scope(exit) game.destroy;
-
 	context.run(game);
 }

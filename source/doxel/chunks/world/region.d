@@ -15,6 +15,7 @@ class Region: BaseRegion, IRegionContainer
 
   this(IRegion subRegion)
   {
+    assert(subRegion.getRank() >= 1);
     super(subRegion.getRank()+1, vec3i(4,4,2));
     regions[subRegion.getSiteIndex()] = subRegion;
     subRegion.setContainer(this);
@@ -22,6 +23,7 @@ class Region: BaseRegion, IRegionContainer
 
   this(int rank)
   {
+    assert(rank > 1);
     super(rank, vec3i(4,4,2));
   }
 
@@ -41,18 +43,15 @@ class Region: BaseRegion, IRegionContainer
     regions[region.getSiteIndex()] = region;
   }
 
-  /// Creates a chunk if there is none at given coordinate
+  /// Creates a region if there is none at given site
   IRegion getCreateRegion(vec3i site)
-  {  
+  {
     int index = site.x + 8*site.y + 64*site.z;
     IRegion reg = regions[index];
     if(reg is null)
     {
-      if(rank == 2)
-      {
-        reg = new Chunk(this, site);
-      }
-      else reg = new Region(this, site);
+      assert(rank > 2);
+      reg = new Region(this, site);
       regions[index] = reg;
     }
     return reg;

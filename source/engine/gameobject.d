@@ -30,4 +30,28 @@ class GameObject : Updatable, Drawable
     this.uniformSetBehavior.setUniforms();
     this.drawBehavior.draw();
   }
+
+  // getters
+
+  Updatable getUpdateBehavior()
+  {
+    return updateBehavior;
+  }
+
+  Drawable getDrawBehavior()
+  {
+    return drawBehavior;
+  }
+
+  // setters
+
+  void setUpdateBehavior(Updatable updatable)
+  {
+    this.updateBehavior = updatable;
+  }
+
+  void setDrawBehavior(Drawable drawable)
+  {
+    this.drawBehavior = drawable;
+  }
 }

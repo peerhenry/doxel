@@ -2,7 +2,9 @@ import std.algorithm;
 import engine;
 import iregion, iregioncontainer, chunk, world, chunkobjectfactory;
 
-class WorldObjectProvider
+// OBSOLETE
+
+/*class WorldObjectProvider
 {
   private ChunkObjectFactory factory;
   private Chunk[] chunks;
@@ -58,4 +60,4 @@ class WorldObjectProvider
     }
     return chunks;
   }
-}
+}*/

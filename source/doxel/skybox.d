@@ -29,6 +29,8 @@ class Skybox
   ~this()
   {
     this.texture.destroy;
+    this.cube.destroy;
+    this.program.destroy;
   }
 
   void loadSkybox()

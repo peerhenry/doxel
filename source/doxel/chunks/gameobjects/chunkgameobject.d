@@ -8,4 +8,9 @@ class ChunkGameObject : GameObject
   {
     super(updateBehavior, uniformSetBehavior, drawBehavior);
   }
+
+  override void draw()
+  {
+    super.draw();
+  }
 }

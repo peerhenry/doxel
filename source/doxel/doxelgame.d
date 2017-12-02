@@ -5,8 +5,9 @@ import gfm.opengl, gfm.math, gfm.sdl2;
 import engine;
 
 import inputhandler, 
-    blocks, chunk, region, world, 
-    chunkobjectfactory, worldobjectprovider, perlin, heightmap, skybox;
+    blocks, chunk, region, world, skybox,
+    chunkmeshbuilder, chunkmodelfactory, chunkobjectfactory, chunkgameobject,
+    perlin, heightmap, worldsurfacechunkgenerator;
 
 class DoxelGame : Game
 {
@@ -20,7 +21,7 @@ class DoxelGame : Game
   Skybox skybox;
 
   World world;
-  WorldObjectProvider provider;
+  WorldSurfaceChunkGenerator generator;
 
   this(OpenGL gl, InputHandler input, Camera camera)
   {
@@ -57,63 +58,26 @@ class DoxelGame : Game
 
   void initialize()
   {
-    createModels();
+    setWorldGenerator();
     setGlSettings();
     initUniforms();
   }
 
-  void createModels()
+  void setWorldGenerator()
   {
     int seed = 3;
     Perlin perlin = new Perlin(seed);
 
     int cellSize = 32;
     int depthRange = 16;
-    HeightMap map = new HeightMap(perlin, cellSize, depthRange); // noise, cell size, range
+    HeightMap heightMap = new HeightMap(perlin, cellSize, depthRange); // noise, cell size, range
     this.world = new World();
-    int size = 128;
-    for(int i = -size; i<size; i++)
-    {
-      for(int j = -size; j<size; j++)
-      {
-        //int h = uniform(0, 2);
-        int h = map.getHeight(i, j);
-        world.setBlock(i,j,h,Block.GRASS);
-        world.setBlockColumn(i,j,h-1,3,Block.DIRT);
-        world.setBlockColumn(i,j,h-4,-6,Block.STONE);
 
-        if(i%8 == 0 && j%8 == 0)
-        {
-          bool shouldSpawn = uniform(0, 2) == 1;
-          if(shouldSpawn)
-          {
-            int treeHeight = uniform(4, 7);
-            spawnTree(world, i, j, h+1, treeHeight);
-          }
-        }
-      }
-    }
-
+    ChunkMeshBuilder meshBuilder = new ChunkMeshBuilder(world);
+    ChunkModelFactory modelFactory = new ChunkModelFactory(gl, vertexSpec, meshBuilder);
     UniformSetter!mat4f modelSetter = new PvmNormalMatrixSetter(this.program, this.camera, "PVM", "NormalMatrix"); // strings are uniform names in shader
-    auto chunkFac = new ChunkObjectFactory(gl, vertexSpec, modelSetter, world);
-    this.provider = new WorldObjectProvider(chunkFac, world);
-  }
-
-  void spawnTree(World world, int i, int j, int k, int height)
-  {
-    foreach(ii; -1..2)
-    {
-      foreach(jj; -1..2)
-      {
-        foreach(kk; -1..2)
-        {
-          world.setBlock(i + ii, j + jj, k + height + kk, Block.LEAVES);
-        }
-      }
-    }
-    foreach(h; 0..height){
-      world.setBlock(i,j,k+h,Block.TRUNK);
-    }
+    auto chunkFac = new ChunkObjectFactory(this.camera, modelFactory, modelSetter);
+    this.generator = new WorldSurfaceChunkGenerator(world, heightMap, chunkFac);
   }
 
   void setGlSettings()
@@ -144,13 +108,43 @@ class DoxelGame : Game
     // calculate line intersection with chunk, and then with block
   }
 
+  bool[string] visited;
+
+  void markAsVisited(vec2i centerRel_ij)
+  {
+    visited[centerRel_ij.toString()] = true;
+  }
+
+  bool hasBeenVisited(vec2i centerRel_ij)
+  {
+    return (centerRel_ij.toString() in visited) !is null;
+  }
+
   void update()
   {
     input.update();
     camera.update();
-    if(provider.chunksToGo())
+
+    // spawn chunks around the player
+    // get chunksite containing the camera.
+    import std.math;
+    vec2i centerRel_ij = vec2i(
+      cast(int)floor(camera.position.x/8),
+      cast(int)floor(camera.position.y/8)
+    );
+
+    foreach(ii; -15 .. 16)
     {
-      gameObjects ~= provider.getNextChunkObjects(10);
+      foreach(jj; -15 .. 16)
+      {
+        vec2i next_ij = centerRel_ij + vec2i(ii, jj);
+        if(!hasBeenVisited(next_ij))
+        {
+          ChunkGameObject[] newObjects = generator.generateChunkColumn(next_ij);
+          this.gameObjects ~= newObjects;
+          markAsVisited(next_ij);
+        }
+      }
     }
 
     foreach(obj; this.gameObjects)
