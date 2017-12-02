@@ -4,7 +4,7 @@ import inoise;
 
 class Perlin: INoise
 {
-  private short perm[] = new short[p_supply.length];
+  private short[] perm = new short[p_supply.length];
 
   this()
   {
@@ -106,7 +106,7 @@ class Perlin: INoise
 
   // this contains all the numbers between 0 and 255, these are
   // put in a random order depending upon the seed
-  private static const short p_supply[] = [
+  private static const short[] p_supply = [
     151,160,137,91,90,15,
     131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
     190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,
@@ -123,7 +123,7 @@ class Perlin: INoise
   ];
 
   // 16 unit vectors
-  private static vec2f gradients[] = [
+  private static vec2f[] gradients = [
     vec2f(1,0), vec2f(-1,0), vec2f(0,1), vec2f(0,-1),
     vec2f(0.707,0.707), vec2f(-0.707,0.707), vec2f(0.707,-0.707), vec2f(-0.707,-0.707),
     vec2f(0.866, 0.5), vec2f(-0.866, 0.5), vec2f(0.866, -0.5), vec2f(-0.866, -0.5), 

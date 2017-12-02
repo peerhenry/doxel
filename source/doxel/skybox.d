@@ -1,61 +1,74 @@
 import gfm.opengl;
+import engine;
 
-/*class CSkybox
+/*class Skybox
 {
   private:
-   uint uiVAO;
-   CVertexBufferObject vboRenderData;
-   CTexture tTextures[6];
-   string sDirectory;
-   string sFront, sBack, sLeft, sRight, sTop, sBottom;
-
+    OpenGL gl;
+    GLProgram program;
+    CubeMap texture;
+    VertexSpecification!VertexP vertexSpec;
   public:
 
-  void loadSkybox(string a_sDirectory, string a_sFront, string a_sBack, string a_sLeft, string a_sRight, string a_sTop, string a_sBottom)
+  this(OpenGL gl)
   {
-    tTextures[0].loadTexture2D(a_sDirectory+a_sFront);
-    tTextures[1].loadTexture2D(a_sDirectory+a_sBack);
-    tTextures[2].loadTexture2D(a_sDirectory+a_sLeft);
-    tTextures[3].loadTexture2D(a_sDirectory+a_sRight);
-    tTextures[4].loadTexture2D(a_sDirectory+a_sTop);
-    tTextures[5].loadTexture2D(a_sDirectory+a_sBottom);
+    this.gl = gl;
+    string[] shader_source = readLines("source/doxel/glsl/skybox.glsl");
+    this.program = new GLProgram(gl, shader_source);
+    this.vertexSpec = new VertexSpecification!VertexP(this.program);
+    loadSkybox();
+    createCube();
+  }
 
-    sDirectory = a_sDirectory;
+  ~this()
+  {
+    this.texture.destroy;
+  }
 
-    sFront = a_sFront;
-    sBack = a_sBack;
-    sLeft = a_sLeft;
-    sRight = a_sRight;
-    sTop = a_sTop;
-    sBottom = a_sBottom;
+  void loadSkybox()
+  {
+    this.texture = new CubeMap(gl, program, "cubeMap"
+    , "skybox/top.png"
+    , "skybox/bottom.png"
+    , "skybox/front.png"
+    , "skybox/back.png"
+    , "skybox/left.png"
+    , "skybox/right.png");
+  }
 
-    foreach(i; 0..6)
-    {
-      tTextures[i].setFiltering(TEXTURE_FILTER_MAG_BILINEAR, TEXTURE_FILTER_MIN_BILINEAR);
-      tTextures[i].setSamplerParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      tTextures[i].setSamplerParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    }
-
-    glGenVertexArrays(1, &uiVAO);
-    glBindVertexArray(uiVAO);
-
-    vboRenderData.createVBO();
-    vboRenderData.bindVBO();
-
-    // Proceed with VBO creation...
+  void createCube()
+  {
+    
   }
   
   void draw()
   {
     glDepthMask(0);
     glBindVertexArray(uiVAO);
-    foreach(i; 0..6)
-    {
-      tTextures[i].bindTexture();
-      glDrawArrays(GL_TRIANGLE_STRIP, i*4, 4);
-    }
+    this.texture.bind();
+    glDrawElements(GL_QUADS, sizeof(cube_indices)/sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
     glDepthMask(1);
   }
 
-   void releaseSkybox();
+  // DATA
+
+  GLfloat cube_vertices[] = {
+    -1.0,  1.0,  1.0,
+    -1.0, -1.0,  1.0,
+    1.0, -1.0,  1.0,
+    1.0,  1.0,  1.0,
+    -1.0,  1.0, -1.0,
+    -1.0, -1.0, -1.0,
+    1.0, -1.0, -1.0,
+    1.0,  1.0, -1.0,
+  };
+
+  GLushort cube_indices[] = {
+    0, 1, 2, 3,
+    3, 2, 6, 7,
+    7, 6, 5, 4,
+    4, 5, 1, 0,
+    0, 3, 7, 4,
+    1, 2, 6, 5,
+  };
 };*/

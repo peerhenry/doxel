@@ -1,5 +1,10 @@
 import gfm.math;
 
+struct VertexP
+{
+  vec3f position;
+}
+
 struct VertexPN
 {
   vec3f position;

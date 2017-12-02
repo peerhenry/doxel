@@ -4,7 +4,7 @@ import engine;
 
 import quadgenerator_pnt, blocks, sides;
 
-class CubeGenerator
+/*class CubeGenerator
 {
   OpenGL gl;
   VertexSpecification!VertexPNT spec;
@@ -64,4 +64,4 @@ class CubeGenerator
     auto mesh = Mesh!VertexPNT(vertexArray, indices);
     return new Model!VertexPNT(gl, setter, spec, mesh);
   }
-}
+}*/

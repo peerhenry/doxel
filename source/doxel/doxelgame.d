@@ -6,20 +6,20 @@ import engine;
 
 import inputhandler, 
     blocks, chunk, region, world, 
-    chunkmodelfactory, worldmodelprovider, perlin, heightmap;
+    chunkobjectfactory, worldobjectprovider, perlin, heightmap;
 
 class DoxelGame : Game
 {
   GLProgram program;
   Camera camera;
-  Model!VertexPNT[] models;
+  GameObject[] gameObjects;
   OpenGL gl;
   InputHandler input;
   VertexSpecification!VertexPNT vertexSpec;
   Texture texture;
 
   World world;
-  WorldModelProvider provider;
+  WorldObjectProvider provider;
 
   this(OpenGL gl, InputHandler input, Camera camera)
   {
@@ -37,7 +37,7 @@ class DoxelGame : Game
   {
     this.program.destroy;
     this.vertexSpec.destroy;
-    foreach(m; this.models)
+    foreach(m; this.gameObjects)
     {
       m.destroy;
     }
@@ -106,9 +106,9 @@ class DoxelGame : Game
       }
     }
 
-    ModelSetter modelSetter = new PvmNormalMatrixSetter(this.program, this.camera);
-    auto chunkFac = new ChunkModelFactory(gl, vertexSpec, modelSetter, world);
-    this.provider = new WorldModelProvider(chunkFac, world);
+    UniformSetter!mat4f modelSetter = new PvmNormalMatrixSetter(this.program, this.camera, "PVM", "NormalMatrix"); // strings are uniform names in shader
+    auto chunkFac = new ChunkObjectFactory(gl, vertexSpec, modelSetter, world);
+    this.provider = new WorldObjectProvider(chunkFac, world);
   }
 
   void spawnTree(World world, int i, int j, int k, int height)
@@ -161,7 +161,12 @@ class DoxelGame : Game
     camera.update();
     if(provider.chunksToGo())
     {
-      models ~= provider.getNextChunkModels(10);
+      gameObjects ~= provider.getNextChunkObjects(10);
+    }
+
+    foreach(obj; this.gameObjects)
+    {
+      obj.update();
     }
   }
 
@@ -169,9 +174,9 @@ class DoxelGame : Game
   {
     this.program.use();
     this.texture.bind();
-    foreach(m; this.models)
+    foreach(obj; this.gameObjects)
     {
-      m.draw();
+      obj.draw();
     }
     program.unuse();
   }

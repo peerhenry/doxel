@@ -1,16 +1,16 @@
 import std.algorithm;
 import engine;
-import iregion, iregioncontainer, chunk, world, chunkmodelfactory;
+import iregion, iregioncontainer, chunk, world, chunkobjectfactory;
 
-class WorldModelProvider
+class WorldObjectProvider
 {
-  private ChunkModelFactory modelFac;
+  private ChunkObjectFactory factory;
   private Chunk[] chunks;
   private int nextIndex;
 
-  this(ChunkModelFactory modelFac, World world)
+  this(ChunkObjectFactory factory, World world)
   {
-    this.modelFac = modelFac;
+    this.factory = factory;
     this.chunks = getChunks(world.topRegion);
   }
 
@@ -20,22 +20,21 @@ class WorldModelProvider
     return nextIndex < chunks.length;
   }
 
-  Model!VertexPNT[] getNextChunkModels(int amount)
+  GameObject[] getNextChunkObjects(int amount)
   {
     int newNextIndex = min(nextIndex + amount, chunks.length);
-    Model!VertexPNT[] models;
+    GameObject[] objects;
     foreach(i; nextIndex..newNextIndex) // 0..3 => 0,1,2
     {
-      Model!VertexPNT newModel = modelFac.generateChunkModel(chunks[i]);
-      models ~= newModel;
+      GameObject newObj = factory.createChunkObject(chunks[i]);
+      objects ~= newObj;
     }
     nextIndex = newNextIndex;
-    return models;
+    return objects;
   }
 
   Chunk[] getChunks(IRegionContainer region)
   {
-    Model!VertexPNT[] models;
     IRegion[] regions = region.getRegions();
     Chunk[] chunks;
 

@@ -2,10 +2,10 @@ import std.typecons;
 
 import gfm.math, gfm.opengl;
 
-import vertex, modelsetter, mesh;
+import vertex, mesh, engine.interfaces;
 
 /// An indexed vertex model
-class Model(VertexType)
+class Model(VertexType) : Drawable
 {
   private
   {
@@ -13,18 +13,15 @@ class Model(VertexType)
     GLBuffer ibo;
     GLVAO vao;
     GLuint indexCount;
-    ModelSetter modelSetter;
   }
   mat4f modelMatrix;
 
   /// constructor
   this(
     OpenGL gl, // for buffer creation
-    ModelSetter modelSetter, // for uploading the model matrix
     VertexSpecification!VertexType spec, // for creating the VAO
     Mesh!VertexType mesh)
   {
-    this.modelSetter = modelSetter;
     vbo = new GLBuffer(gl, GL_ARRAY_BUFFER, GL_STATIC_DRAW);
     vbo.setData(mesh.vertices);
     ibo = new GLBuffer(gl, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
@@ -51,7 +48,6 @@ class Model(VertexType)
   /// Binds the VAO and calls glDrawElements
   void draw()
   {
-    this.modelSetter.set(this.modelMatrix);
     this.vao.bind();
     glDrawElements(
         GL_TRIANGLES,      // mode

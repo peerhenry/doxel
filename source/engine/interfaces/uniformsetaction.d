@@ -1,0 +1,4 @@
+interface UniformSetAction
+{
+  void setUniforms();
+}

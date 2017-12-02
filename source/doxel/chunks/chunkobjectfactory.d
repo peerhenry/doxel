@@ -4,36 +4,28 @@ import gfm.math, gfm.opengl;
 
 import engine;
 
-import chunk, chunkmodel, chunkmeshbuilder, world, iregioncontainer;
+import chunk, chunkgameobject, chunkmeshbuilder, world, iregioncontainer;
 
-class ChunkModelFactory
+class ChunkObjectFactory
 {
   OpenGL gl;
   VertexSpecification!VertexPNT spec;
-  ModelSetter setter;
+  UniformSetter!mat4f setter;
   World world;
 
-  this(OpenGL gl, VertexSpecification!VertexPNT spec, ModelSetter modelSetter, World world)
+  this(OpenGL gl, VertexSpecification!VertexPNT spec, UniformSetter!mat4f uniformSetter, World world)
   {
     this.gl = gl;
     this.spec = spec;
-    this.setter = modelSetter;
+    this.setter = uniformSetter;
     this.world = world;
   }
 
-  ChunkModel generateChunkModel(Chunk chunk)
+  ChunkGameObject createChunkObject(Chunk chunk)
   {
-    Mesh!VertexPNT mesh = buildChunkMesh(this.world, chunk);
-    ChunkModel model = new ChunkModel(gl, setter, spec, mesh, chunk);
     vec3i site = chunk.getSite();
     vec3f location = vec3f((site.x-4)*8.0, (site.y-4)*8.0, (site.z-2)*4.0);
     IRegionContainer container = chunk.getContainer();
-    if(container is null)
-    {
-      import std.stdio;
-      writeln("A container was null for chunk at site: ");
-      writeln(chunk.getSite().toString());
-    }
     while(container !is null)
     {
       vec3f cSite = container.getSite();
@@ -43,7 +35,12 @@ class ChunkModelFactory
       location.z += (cSite.z-2)*pow(4.0, rank);
       container = container.getContainer();
     }
-    model.modelMatrix = mat4f.translation(location);
-    return model;
+    mat4f modelMatrix = mat4f.translation(location);
+    Mat4fSetAction action = new Mat4fSetAction(setter, modelMatrix);
+    Mesh!VertexPNT mesh = buildChunkMesh(this.world, chunk);
+    Model!VertexPNT model = new Model!VertexPNT(gl, spec, mesh);
+    ChunkGameObject chunkObject = new ChunkGameObject(null, action, model);
+
+    return chunkObject;
   }
 }
