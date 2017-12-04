@@ -12,6 +12,7 @@ class ChunkUpdateBehavior: Updatable
   private static const LOAD_RANGE = 256;
   private static const LOAD_RANGE_SQUARED = LOAD_RANGE*LOAD_RANGE;
   private static const UNLOAD_RANGE_SQUARED = (LOAD_RANGE+50)*(LOAD_RANGE+50);
+  private bool hasModel;
 
   this(Camera camera, ChunkGameObject chunkObject, IChunkModelFactory modelFactory, Limiter limiter)
   {
@@ -48,20 +49,22 @@ class ChunkUpdateBehavior: Updatable
   {
     if(chunkIsWithinLoadRange())
     {
-      if(cast(DefaultDraw)chunkObject.getDrawBehavior() !is null && !limiter.limitReached())
+      if(!hasModel && !limiter.limitReached())
       {
         chunkObject.getDrawBehavior().destroy;
         VertexModel model = modelFactory.createModel(chunkObject.chunk);
         chunkObject.setDrawBehavior(model);
+        hasModel = true;
         limiter.increment();
       }
     }
     else if(chunkIsOutsideUnloadRange())
     {
-      if(cast(VertexModel)chunkObject.getDrawBehavior() !is null)
+      if(hasModel)
       {
         chunkObject.getDrawBehavior().destroy;
         chunkObject.setDrawBehavior(new DefaultDraw());
+        hasModel = false;
       }
     }
   }

@@ -24,6 +24,7 @@ class WorldSurfaceChunkGenerator
     bool withTree = uniform(0,2, random) == 1;
     int tree_i = 4 + uniform(-2,3, random);
     int tree_j = 4 + uniform(-2,3, random);
+    int lowestHeight = 99999999;
     foreach(ii; 0..8)
     {
       foreach(jj; 0..8)
@@ -31,6 +32,7 @@ class WorldSurfaceChunkGenerator
         int block_i = (centerRel_ij.x)*8 + ii;
         int block_j = (centerRel_ij.y)*8 + jj;
         int h = heightMap.getHeight(block_i, block_j) + hOffset;
+        if(h < lowestHeight) lowestHeight = h;
         world.setBlock(block_i, block_j, h, h<hOffset ? Block.SAND : Block.GRASS);
         world.setBlockColumn(block_i, block_j, h-1, 2, Block.DIRT);
         world.setBlockColumn(block_i, block_j, h-3, 2, Block.STONE);
@@ -53,7 +55,10 @@ class WorldSurfaceChunkGenerator
     ChunkGameObject[] chunkObjects;
     foreach(chunk; newChunks)
     {
-      chunkObjects ~= chunkObjectFactory.createChunkObject(chunk);
+      if(chunk.getGlobalSite().z*8+4 >= lowestHeight)
+      {
+        chunkObjects ~= chunkObjectFactory.createChunkObject(chunk);
+      }
     }
     // Clear the new chunks in world as they have been consumed.
     world.clearNewChunks();

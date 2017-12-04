@@ -1,6 +1,6 @@
 import std.math;
 import gfm.math;
-import iregioncontainer, region, baseregion, blocks;
+import iregioncontainer, region, baseregion, blocks, sitecalculator;
 
 class Chunk: BaseRegion
 {
@@ -43,6 +43,11 @@ class Chunk: BaseRegion
       nextContainer = nextContainer.getContainer();
     }
     return worldSite;
+  }
+
+  vec3i getGlobalSite()
+  {
+    return SiteCalculator.toGlobalSite(getWorldSite());
   }
 
   /// get this chunks position relative to given chunk.

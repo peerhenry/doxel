@@ -32,6 +32,11 @@ class ChunkMeshBuilder
 
   ChunkMesh buildChunkMesh(Chunk chunk)
   {
+    import std.stdio, std.datetime;
+    import std.datetime.stopwatch : benchmark, StopWatch;
+    StopWatch sw;
+    sw.start();
+
     VertexPNT[] vertices;
     uint[] indices;
     int counter;
@@ -70,6 +75,16 @@ class ChunkMeshBuilder
         }
       }
     }
+
+    if(vertices.length == 0)
+    {
+      writeln("No vertices were create for this chunk...");
+    }
+
+    Duration dur = sw.peek();
+    sw.stop();
+    writeln("Chunk mesh build time: ", dur.toString());
+    //writeln("Chunk mesh vertex count: ", vertices.length);
     
     return Mesh!VertexPNT(vertices, indices);
   }
