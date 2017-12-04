@@ -18,13 +18,15 @@ class GameObject : Updatable, Drawable
     this.modelMatrix = modelMatrix;
   }
 
+  alias VertexModel = Model!VertexPNT;
+
   ~this()
   {
     if(updateBehavior !is null) updateBehavior.destroy();
     if(uniformSetBehavior !is null) uniformSetBehavior.destroy();
     if(drawBehavior !is null) // hack for proper shutdown
     {
-      auto drawcast = cast(Model!VertexPNT)drawBehavior;
+      auto drawcast = cast(VertexModel)drawBehavior;
       if(drawcast !is null) drawcast.destroy();
     }
   }

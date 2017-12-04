@@ -1,6 +1,6 @@
 todo:
 
-chunk column loading should start at the center of player
+extract scene from doxelgame; chunkscene
 read settings from config file
 block deletion
 inventory system

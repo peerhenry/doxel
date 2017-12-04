@@ -110,7 +110,7 @@ class DoxelGame : Game
     ChunkMeshBuilder meshBuilder = new ChunkMeshBuilder(world);
     ChunkModelFactory modelFactory = new ChunkModelFactory(gl, vertexSpec, meshBuilder);
     UniformSetter modelSetter = new PvmNormalMatrixSetter(this.program, this.camera, "PVM", "NormalMatrix"); // strings are uniform names in shader
-    this.modelLimiter = new Limiter(15);
+    this.modelLimiter = new Limiter(20);
     this.chunkLimiter = new Limiter(50);
     auto chunkFac = new ChunkObjectFactory(this.camera, modelFactory, modelSetter, modelLimiter);
     this.generator = new WorldSurfaceChunkGenerator(world, heightMap, chunkFac);
@@ -156,6 +156,11 @@ class DoxelGame : Game
     return (centerRel_ij.toString() in visited) !is null;
   }
 
+  vec2i lastCamRel_ij = vec2i(0,0);
+  vec2i[] genSites;
+  int genSiteIndex;
+  int genSiteCounter;
+
   void update()
   {
     modelLimiter.reset();
@@ -171,66 +176,56 @@ class DoxelGame : Game
       cast(int)floor(camera.position.y/8)
     );
 
-    int creationRange = 20;
-
-    // go in spiral...
-    int shell = 0;
-    vec2i[] genSites = [centerRel_ij];
-    vec2i next_ij = centerRel_ij;
-    vec2i[3] dirs = [vec2i(-1,-1), vec2i(1,-1), vec2i(1,1)];
-    while(shell < 20)
+    if(centerRel_ij != lastCamRel_ij)
     {
-      // go up
-      next_ij = next_ij + vec2i(0,1);
-      genSites ~= next_ij;
-      // go upleft
-      foreach(n; 0..shell)
+      genSites = [centerRel_ij];
+      genSiteIndex = 0;
+      genSiteCounter = 1;
+      // go in spiral...
+      int shell = 0;
+      vec2i next_ij = centerRel_ij;
+      vec2i[3] dirs = [vec2i(-1,-1), vec2i(1,-1), vec2i(1,1)];
+      while(shell < 40)
       {
-        next_ij = next_ij + vec2i(-1,1);
+        // go up
+        next_ij = next_ij + vec2i(0,1);
         genSites ~= next_ij;
-      }
-      shell++; // expand shell;
-      foreach(dir; dirs)
-      {
+        genSiteCounter++;
+        // go upleft
         foreach(n; 0..shell)
         {
-          next_ij = next_ij + dir;
+          next_ij = next_ij + vec2i(-1,1);
           genSites ~= next_ij;
+          genSiteCounter++;
         }
-      }
-    }
-    foreach(genSite; genSites)
-    {
-      if(!chunkLimiter.limitReached())
-      {
-        if(!hasBeenVisited(genSite))
+        shell++; // expand shell;
+        foreach(dir; dirs)
         {
-          ChunkGameObject[] newObjects = generator.generateChunkColumn(genSite);
-          chunkLimiter.increment();
-          this.gameObjects ~= newObjects;
-          markAsVisited(genSite);
-        }
-      }
-    }
-
-    
-    /*foreach(ii; -creationRange .. creationRange)
-    {
-      foreach(jj; -creationRange .. creationRange)
-      {
-        if(!chunkLimiter.limitReached())
-        {
-          vec2i next_ij = centerRel_ij + vec2i(ii, jj);
-          if(!hasBeenVisited(next_ij))
+          foreach(n; 0..shell)
           {
-            ChunkGameObject[] newObjects = generator.generateChunkColumn(next_ij);
-            chunkLimiter.increment();
-            this.gameObjects ~= newObjects;
-            markAsVisited(next_ij);
+            next_ij = next_ij + dir;
+            genSites ~= next_ij;
+            genSiteCounter++;
           }
         }
       }
-    }*/
+      lastCamRel_ij = centerRel_ij;
+      genSiteIndex = 0;
+    }
+
+    while(!chunkLimiter.limitReached() && genSiteCounter > 0)
+    {
+      auto genSite = genSites[genSiteIndex];
+      genSiteIndex++;
+      if(!hasBeenVisited(genSite))
+      {
+        ChunkGameObject[] newObjects = generator.generateChunkColumn( genSite );
+        chunkLimiter.increment();
+        this.gameObjects ~= newObjects;
+        markAsVisited(genSite);
+      }
+      genSiteCounter--;
+    }
 
     foreach(obj; this.gameObjects)
     {

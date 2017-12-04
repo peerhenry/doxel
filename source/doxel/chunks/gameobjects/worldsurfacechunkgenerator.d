@@ -31,10 +31,10 @@ class WorldSurfaceChunkGenerator
         int block_i = (centerRel_ij.x)*8 + ii;
         int block_j = (centerRel_ij.y)*8 + jj;
         int h = heightMap.getHeight(block_i, block_j) + hOffset;
-        world.setBlock(block_i, block_j, h, h<0 ? Block.SAND : Block.GRASS);
+        world.setBlock(block_i, block_j, h, h<hOffset ? Block.SAND : Block.GRASS);
         world.setBlockColumn(block_i, block_j, h-1, 2, Block.DIRT);
         world.setBlockColumn(block_i, block_j, h-3, 2, Block.STONE);
-        if(withTree && ii == tree_i && jj == tree_j && h > 0)
+        if(withTree && ii == tree_i && jj == tree_j && h > hOffset)
         {
           spawnTree(block_i, block_j, h+1, uniform(3,6,random));
           withTree = false;
