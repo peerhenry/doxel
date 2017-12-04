@@ -22,10 +22,10 @@ class GameObject : Updatable, Drawable
   {
     if(updateBehavior !is null) updateBehavior.destroy();
     if(uniformSetBehavior !is null) uniformSetBehavior.destroy();
-    auto drawcast = cast(Model!VertexPNT)drawBehavior;
-    if(drawcast !is null) // hack for proper shutdown
+    if(drawBehavior !is null) // hack for proper shutdown
     {
-      drawcast.destroy();
+      auto drawcast = cast(Model!VertexPNT)drawBehavior;
+      if(drawcast !is null) drawcast.destroy();
     }
   }
 

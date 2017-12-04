@@ -20,7 +20,8 @@ class DoxelGame : Game
   SkeletonScene skeletonScene;
 
   World world;
-  Limiter limiter;
+  Limiter modelLimiter;
+  Limiter chunkLimiter;
   WorldSurfaceChunkGenerator generator;
 
   SDLTTF ttf;
@@ -109,8 +110,9 @@ class DoxelGame : Game
     ChunkMeshBuilder meshBuilder = new ChunkMeshBuilder(world);
     ChunkModelFactory modelFactory = new ChunkModelFactory(gl, vertexSpec, meshBuilder);
     UniformSetter modelSetter = new PvmNormalMatrixSetter(this.program, this.camera, "PVM", "NormalMatrix"); // strings are uniform names in shader
-    this.limiter = new Limiter(15);
-    auto chunkFac = new ChunkObjectFactory(this.camera, modelFactory, modelSetter, limiter);
+    this.modelLimiter = new Limiter(15);
+    this.chunkLimiter = new Limiter(50);
+    auto chunkFac = new ChunkObjectFactory(this.camera, modelFactory, modelSetter, modelLimiter);
     this.generator = new WorldSurfaceChunkGenerator(world, heightMap, chunkFac);
   }
 
@@ -156,7 +158,8 @@ class DoxelGame : Game
 
   void update()
   {
-    limiter.reset();
+    modelLimiter.reset();
+    chunkLimiter.reset();
     input.update();
     camera.update();
 
@@ -169,26 +172,65 @@ class DoxelGame : Game
     );
 
     int creationRange = 20;
-    foreach(ii; -creationRange .. creationRange)
+
+    // go in spiral...
+    int shell = 0;
+    vec2i[] genSites = [centerRel_ij];
+    vec2i next_ij = centerRel_ij;
+    vec2i[3] dirs = [vec2i(-1,-1), vec2i(1,-1), vec2i(1,1)];
+    while(shell < 20)
     {
-      foreach(jj; -creationRange .. creationRange)
+      // go up
+      next_ij = next_ij + vec2i(0,1);
+      genSites ~= next_ij;
+      // go upleft
+      foreach(n; 0..shell)
       {
-        vec2i next_ij = centerRel_ij + vec2i(ii, jj);
-        if(!hasBeenVisited(next_ij))
+        next_ij = next_ij + vec2i(-1,1);
+        genSites ~= next_ij;
+      }
+      shell++; // expand shell;
+      foreach(dir; dirs)
+      {
+        foreach(n; 0..shell)
         {
-          ChunkGameObject[] newObjects = generator.generateChunkColumn(next_ij);
-          /*foreach(go; newObjects)
-          {
-            vec3f[8] vecs = go.getBBCorners();
-            VertexP[8] bbverts;
-            foreach(i, v; vecs) bbverts[i] = VertexP(v);
-            skeletonScene.createHexaHedron(bbverts);
-          }*/
-          this.gameObjects ~= newObjects;
-          markAsVisited(next_ij);
+          next_ij = next_ij + dir;
+          genSites ~= next_ij;
         }
       }
     }
+    foreach(genSite; genSites)
+    {
+      if(!chunkLimiter.limitReached())
+      {
+        if(!hasBeenVisited(genSite))
+        {
+          ChunkGameObject[] newObjects = generator.generateChunkColumn(genSite);
+          chunkLimiter.increment();
+          this.gameObjects ~= newObjects;
+          markAsVisited(genSite);
+        }
+      }
+    }
+
+    
+    /*foreach(ii; -creationRange .. creationRange)
+    {
+      foreach(jj; -creationRange .. creationRange)
+      {
+        if(!chunkLimiter.limitReached())
+        {
+          vec2i next_ij = centerRel_ij + vec2i(ii, jj);
+          if(!hasBeenVisited(next_ij))
+          {
+            ChunkGameObject[] newObjects = generator.generateChunkColumn(next_ij);
+            chunkLimiter.increment();
+            this.gameObjects ~= newObjects;
+            markAsVisited(next_ij);
+          }
+        }
+      }
+    }*/
 
     foreach(obj; this.gameObjects)
     {
