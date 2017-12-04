@@ -1,15 +1,20 @@
 todo:
 
-extract scene from doxelgame; chunkscene
+first person (movement, jumping, collision detection)
+- make update a function of dt
+
+== next
+refactor: extract chunk scene from doxel game and move DI and registrations to game.
 read settings from config file
+translucent water (2 render calls for chunks containing water)
+shadow mapping
+calculate vectors based on a reference region, not world center (remove any world center methods)
+
+== backlog
 block deletion
 inventory system
 block addition
-first person (movement, jumping, collision detection)
-translucent water (2 render calls for chunks containing water)
 FPS counter
-chunk model generation performance measurment and improvement
-shadow mapping
 make region coordinate system is variable (not just 8-8-4)
 put rendering and world loading on different threads
 distant chunk rendering

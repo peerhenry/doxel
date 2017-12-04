@@ -1,7 +1,7 @@
 import std.array, std.stdio, std.random;
 import gfm.opengl, gfm.math, gfm.sdl2;
 import engine;
-import inputhandler, 
+import inputhandler, player,
     blocks, chunk, region, world, limiter,
     skybox, quadoverlay, skeletonscene,
     chunkmeshbuilder, chunkmodelfactory, chunkobjectfactory, chunkgameobject,
@@ -11,6 +11,7 @@ class DoxelGame : Game
 {
   GLProgram program;
   Camera camera;
+  Player player;
   ChunkGameObject[] gameObjects;
   OpenGL gl;
   InputHandler input;
@@ -32,12 +33,13 @@ class DoxelGame : Game
 
   QuadOverlay quadModel;
 
-  this(Context context, InputHandler input, Camera camera)
+  this(Context context, InputHandler input, Camera camera, Player player)
   {
     this.gl = context.gl;
     this.input = input;
     input.setGame(this);
     this.camera = camera;
+    this.player = player;
     //camera.setPosition(vec3f(0,0,10));
     this.skybox = new Skybox(gl, camera);
     this.createProgram();
@@ -167,6 +169,7 @@ class DoxelGame : Game
     chunkLimiter.reset();
     input.update();
     camera.update();
+    player.update();
 
     // spawn chunks around the player
     // get chunksite containing the camera.

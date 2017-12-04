@@ -1,6 +1,6 @@
 import gfm.math, gfm.sdl2;
 import engine;
-import doxelgame;
+import doxelgame, player;
 
 class InputHandler
 {
@@ -10,13 +10,15 @@ class InputHandler
     int prev_x;
     int prev_y;
     Camera cam;
+    Player player;
     DoxelGame game;
   }
 
-  this(Context context, Camera cam)
+  this(Context context, Camera cam, Player player)
   {
     this.sdl = context.sdl;
     this.cam = cam;
+    this.player = player;
     this.sdl.mouse.startCapture();
     SDL_SetRelativeMouseMode(true);
   }
@@ -84,41 +86,8 @@ class InputHandler
     bool r = sdl.keyboard.isPressed(SDLK_d);
     bool u = sdl.keyboard.isPressed(SDLK_SPACE);
     bool d = sdl.keyboard.isPressed(SDLK_LCTRL);
-    vec3f movedir = vec3f(0,0,0);
-    float ds = 0.5;
-    if(f)
-    {
-      movedir += cam.direction;
-    }
-    else if(b)
-    {
-      movedir -= cam.direction;
-    }
-
-    if(l)
-    {
-      movedir -= cam.direction.cross(cam.up);
-    }
-    else if(r)
-    {
-      movedir += cam.direction.cross(cam.up);
-    }
-
-    if(u)
-    {
-      movedir += cam.up;
-    }
-    else if(d)
-    {
-      movedir -= cam.up;
-    }
-
-    if(f || b || l || r || u || d)
-    {
-      if(sdl.keyboard.isPressed(SDLK_LSHIFT)) ds = 3.0;
-      vec3f dvec = movedir.normalized()*ds;
-      cam.translate(dvec);
-    }
+    byte moveByte = f + (b<<1) + (l<<2) + (r<<3) + (u<<4) + (d<<5);
+    player.move(moveByte);
 
     // DEBUG
     if(sdl.keyboard.isPressed(SDLK_l))

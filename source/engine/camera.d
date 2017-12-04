@@ -139,6 +139,11 @@ class Camera : Updatable
     return dir;
   }
 
+  @property vec3f directionRight()
+  {
+    return right;
+  }
+
   @property vec3f position()
   {
     return pos;

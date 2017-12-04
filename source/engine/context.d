@@ -82,7 +82,7 @@ class Context
 
       shouldQuit = sdl.keyboard.isPressed(SDLK_ESCAPE);
 
-      long sleeptime = 16 - cast(long)dt;
+      long sleeptime = 17 - cast(long)dt;
       if(sleeptime > 0) Thread.sleep( dur!("msecs")( sleeptime ) );
     }
   }
