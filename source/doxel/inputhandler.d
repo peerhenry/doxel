@@ -77,6 +77,7 @@ class InputHandler
 
   void updateKeys()
   {
+    // MOVEMENT
     bool f = sdl.keyboard.isPressed(SDLK_a);
     bool b = sdl.keyboard.isPressed(SDLK_z);
     bool l = sdl.keyboard.isPressed(SDLK_s);
@@ -114,8 +115,21 @@ class InputHandler
 
     if(f || b || l || r || u || d)
     {
+      if(sdl.keyboard.isPressed(SDLK_LSHIFT)) ds = 3.0;
       vec3f dvec = movedir.normalized()*ds;
       cam.translate(dvec);
     }
+
+    // DEBUG
+    if(sdl.keyboard.isPressed(SDLK_l))
+    {
+      if(!wasPressed)
+      {
+        game.skeletonScene.createCamFrustum();
+        wasPressed = true;
+      }
+    }
+    else wasPressed = false;
   }
+  bool wasPressed = false;
 }

@@ -1,8 +1,7 @@
 todo:
 
-frustum culling
-read settings from config file
 chunk column loading should start at the center of player
+read settings from config file
 block deletion
 inventory system
 block addition
@@ -15,3 +14,11 @@ make region coordinate system is variable (not just 8-8-4)
 put rendering and world loading on different threads
 distant chunk rendering
 infinite world depth
+
+
+BUG: water side textures...
+Either:
+- Ensure adjacent chunks must be generated before their meshes are built.
+- Or, the meshbuilder must call getGenerateChunk from world, which will mean two things:
+1. the world must be able to generate chunks
+2. WorldSurfaceChunkGenerator must change...

@@ -1,5 +1,5 @@
 import gfm.math;
-import engine.interfaces;
+import engine.interfaces, model, vertex;
 
 class GameObject : Updatable, Drawable
 {
@@ -20,9 +20,13 @@ class GameObject : Updatable, Drawable
 
   ~this()
   {
-    if(updateBehavior !is null) updateBehavior.destroy;
-    if(uniformSetBehavior !is null) uniformSetBehavior.destroy;
-    if(drawBehavior !is null) drawBehavior.destroy;
+    if(updateBehavior !is null) updateBehavior.destroy();
+    if(uniformSetBehavior !is null) uniformSetBehavior.destroy();
+    auto drawcast = cast(Model!VertexPNT)drawBehavior;
+    if(drawcast !is null) // hack for proper shutdown
+    {
+      drawcast.destroy();
+    }
   }
 
   void update()
@@ -47,8 +51,6 @@ class GameObject : Updatable, Drawable
   {
     return drawBehavior;
   }
-
-  //box3!float getBoundingBox();
 
   mat4f getModelMatrix()
   {

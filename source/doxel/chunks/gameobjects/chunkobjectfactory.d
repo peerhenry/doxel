@@ -20,7 +20,8 @@ class ChunkObjectFactory
 
   ChunkGameObject createChunkObject(Chunk chunk)
   {
-    vec3i site = chunk.getSite();
+    vec3f location = chunk.getPositionFromWorldCenter();
+    /*vec3i site = chunk.getSite();
     vec3f location = vec3f((site.x-4)*8.0, (site.y-4)*8.0, (site.z-2)*4.0);
     IRegionContainer container = chunk.getContainer();
     while(container !is null)
@@ -31,7 +32,8 @@ class ChunkObjectFactory
       location.y += (cSite.y-4)*pow(8.0, rank);
       location.z += (cSite.z-2)*pow(4.0, rank);
       container = container.getContainer();
-    }
+    }*/
+
     mat4f modelMatrix = mat4f.translation(location);
     ChunkGameObject chunkObject = new ChunkGameObject(null, uniformSetter, null, modelMatrix); // updater, uniformsetter, drawbehavior, modelmatrix
     chunkObject.chunk = chunk;

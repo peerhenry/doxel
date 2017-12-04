@@ -9,7 +9,7 @@ class ChunkUpdateBehavior: Updatable
   private Camera camera;
   private IChunkModelFactory modelFactory;
   private Limiter limiter;
-  private static const LOAD_RANGE = 200;
+  private static const LOAD_RANGE = 128;
   private static const LOAD_RANGE_SQUARED = LOAD_RANGE*LOAD_RANGE;
   private static const UNLOAD_RANGE_SQUARED = (LOAD_RANGE+50)*(LOAD_RANGE+50);
 

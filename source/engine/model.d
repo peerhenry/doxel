@@ -14,7 +14,6 @@ class Model(VertexType) : Drawable
     GLVAO vao;
     GLuint indexCount;
   }
-  mat4f modelMatrix;
 
   /// constructor
   this(
@@ -35,14 +34,13 @@ class Model(VertexType) : Drawable
       ibo.bind();
       this.vao.unbind();
     }
-    this.modelMatrix = mat4f.identity;
+    this.vbo.destroy;
+    this.ibo.destroy;
   }
 
   ~this()
   {
     this.vao.destroy;
-    this.vbo.destroy;
-    this.ibo.destroy;
   }
 
   /// Binds the VAO and calls glDrawElements

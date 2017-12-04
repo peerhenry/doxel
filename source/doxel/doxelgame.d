@@ -2,7 +2,8 @@ import std.array, std.stdio, std.random;
 import gfm.opengl, gfm.math, gfm.sdl2;
 import engine;
 import inputhandler, 
-    blocks, chunk, region, world, skybox, quadoverlay, limiter,
+    blocks, chunk, region, world, limiter,
+    skybox, quadoverlay, skeletonscene,
     chunkmeshbuilder, chunkmodelfactory, chunkobjectfactory, chunkgameobject,
     perlin, heightmap, worldsurfacechunkgenerator;
 
@@ -10,12 +11,13 @@ class DoxelGame : Game
 {
   GLProgram program;
   Camera camera;
-  GameObject[] gameObjects;
+  ChunkGameObject[] gameObjects;
   OpenGL gl;
   InputHandler input;
   VertexSpecification!VertexPNT vertexSpec;
   Texture texture;
   Skybox skybox;
+  SkeletonScene skeletonScene;
 
   World world;
   Limiter limiter;
@@ -35,10 +37,12 @@ class DoxelGame : Game
     this.input = input;
     input.setGame(this);
     this.camera = camera;
-    camera.setPosition(vec3f(0,0,10));
+    //camera.setPosition(vec3f(0,0,10));
     this.skybox = new Skybox(gl, camera);
     this.createProgram();
     this.texture = new Texture(gl, this.program, "Atlas", "resources/atlas.png"); // gl, program, shader uniform name, image path
+
+    createSkeletonScene();
 
     // load font
     /*this.ttf = new SDLTTF(context.sdl);
@@ -49,25 +53,31 @@ class DoxelGame : Game
     this.surface.destroy;
     this.font.destroy;*/
 
-    this.quadModel = new QuadOverlay(gl);
+    //this.quadModel = new QuadOverlay(gl);
   }
 
   ~this()
   {
-    this.program.destroy;
-    this.vertexSpec.destroy;
-    foreach(m; this.gameObjects)
+    program.destroy;
+    vertexSpec.destroy;
+    foreach(m; gameObjects)
     {
       m.destroy;
     }
-    this.texture.destroy;
-    this.skybox.destroy;
+    texture.destroy;
+    skybox.destroy;
+    skeletonScene.destroy;
 
     /*this.ttf.destroy;
     this.renderer.destroy;
     this.sdlTexture.destroy;
     //this.surface.destroy;
     //this.font.destroy;*/
+  }
+
+  void createSkeletonScene()
+  {
+    skeletonScene = new SkeletonScene(gl, camera);
   }
 
   /// Creates a shader program 
@@ -158,7 +168,7 @@ class DoxelGame : Game
       cast(int)floor(camera.position.y/8)
     );
 
-    int creationRange = 26;
+    int creationRange = 20;
     foreach(ii; -creationRange .. creationRange)
     {
       foreach(jj; -creationRange .. creationRange)
@@ -167,6 +177,13 @@ class DoxelGame : Game
         if(!hasBeenVisited(next_ij))
         {
           ChunkGameObject[] newObjects = generator.generateChunkColumn(next_ij);
+          /*foreach(go; newObjects)
+          {
+            vec3f[8] vecs = go.getBBCorners();
+            VertexP[8] bbverts;
+            foreach(i, v; vecs) bbverts[i] = VertexP(v);
+            skeletonScene.createHexaHedron(bbverts);
+          }*/
           this.gameObjects ~= newObjects;
           markAsVisited(next_ij);
         }
@@ -179,20 +196,23 @@ class DoxelGame : Game
     }
   }
 
-
-
   void draw()
   {
     skybox.draw();
     this.program.use();
     this.texture.bind();
-    //mat4f PV = camera.projection*camera.view;
+    Frustum!float frustum = camera.getFrustum(); // maybe move this to update?
     foreach(obj; this.gameObjects)
     {
-      //mat4f modelMatrix = obj.getModelMatrix();
-      obj.draw();
+      vec3f[8] boxCorners = obj.getBBCorners();
+      if(camera.contains(frustum, boxCorners) != frustum.OUTSIDE)
+      {
+        obj.draw();
+      }
     }
     program.unuse();
+
+    // skeletonScene.draw();
 
     /*renderer.clear();
     renderer.copy(sdlTexture, 10, 10);
@@ -200,6 +220,6 @@ class DoxelGame : Game
     
     //glBindTexture(GL_TEXTURE_2D, sdlTexture.access());
     //glColor3f(1, 0, 0);
-    //quadModel.draw();
+    //quadModel.draw(); 
   }
 }

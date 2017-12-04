@@ -15,6 +15,8 @@ class WorldSurfaceChunkGenerator
     this.chunkObjectFactory = chunkObjectFactory;
   }
 
+  int hOffset = -10;
+
   /// The parameters are site indices relative to the center chunk.
   ChunkGameObject[] generateChunkColumn(vec2i centerRel_ij)
   {
@@ -28,7 +30,7 @@ class WorldSurfaceChunkGenerator
       {
         int block_i = (centerRel_ij.x)*8 + ii;
         int block_j = (centerRel_ij.y)*8 + jj;
-        int h = heightMap.getHeight(block_i, block_j);
+        int h = heightMap.getHeight(block_i, block_j) + hOffset;
         world.setBlock(block_i, block_j, h, h<0 ? Block.SAND : Block.GRASS);
         world.setBlockColumn(block_i, block_j, h-1, 2, Block.DIRT);
         world.setBlockColumn(block_i, block_j, h-3, 2, Block.STONE);
@@ -37,9 +39,9 @@ class WorldSurfaceChunkGenerator
           spawnTree(block_i, block_j, h+1, uniform(3,6,random));
           withTree = false;
         }
-        if(h<-3)
+        if(h<-3+hOffset)
         {
-          foreach(nn; h..-2)
+          foreach(nn; h..(-2+hOffset))
           {
             world.setBlock(block_i, block_j, nn, Block.WATER);
           }
