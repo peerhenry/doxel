@@ -2,7 +2,7 @@ import gfm.opengl, gfm.math;
 
 import engine;
 
-import quadgenerator_pnt, blocks, sides;
+import quadbuilder_pnt, blocks, sides;
 
 /*class CubeGenerator
 {

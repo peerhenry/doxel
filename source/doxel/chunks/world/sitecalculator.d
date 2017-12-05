@@ -1,7 +1,8 @@
 import std.math;
 import gfm.math;
-
-class SiteCalculator
+import coordcalculator;
+public alias calculator = SiteCalculator;
+class SiteCalculator : CoordCalculator
 {
   static:
 
@@ -14,6 +15,14 @@ class SiteCalculator
       else maxRank++;
     }
     return maxRank;
+  }
+
+  pure vec3i siteIndexToSite(int index)
+  {
+    int i = index%8;
+    int k = index/64;
+    int j = (index-k*64)/8;
+    return vec3i(i,j,k);
   }
 
   /// Checks if a site is outside region bounds
@@ -36,8 +45,9 @@ class SiteCalculator
     return newSite;
   }
 
+  // I don't want to allow any absolute calculations, only relative...
   /// Convert world site to global chunk site
-  pure vec3i toGlobalSite(vec3i[int] worldSite)
+  /*pure vec3i toGlobalSite(vec3i[int] worldSite)
   {
     int rank = 1;
     vec3i* nextSite = rank in worldSite;
@@ -51,7 +61,7 @@ class SiteCalculator
       nextSite = rank in worldSite;
     }
     return globalSite;
-  }
+  }*/
 
   /// Converts a global chunk site to a world site
   pure vec3i[int] toWorldSite(vec3i site)
@@ -75,9 +85,4 @@ class SiteCalculator
     }
   }
 
-}
-
-unittest
-{
-  assert(true);
 }

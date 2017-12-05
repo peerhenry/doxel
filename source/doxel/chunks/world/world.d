@@ -1,4 +1,4 @@
-import std.math, std.array, std.stdio;;
+import std.math, std.array, std.stdio, std.format;
 import gfm.math;
 import iregion, iregioncontainer, chunk, region, sides, blocks, sitecalculator;
 
@@ -6,13 +6,26 @@ alias Calc = SiteCalculator;
 
 class World
 {
-  IRegionContainer topRegion;
+  private IRegionContainer _topRegion;
+  @property IRegionContainer topRegion(){ return _topRegion; }
   Appender!(Chunk[]) newChunks;
+  private vec3i[int] worldSiteOrigin;
+
+  vec3i[int] getWorldSiteOrigin()
+  {
+    return worldSiteOrigin;
+  }
+
+  void setOrigin(Chunk chunk)
+  {
+    worldSiteOrigin = chunk.getWorldSite();
+  }
 
   this()
   {
-    this.topRegion = new Region(2);
+    _topRegion = new Region(2);
     newChunks = appender!(Chunk[])();
+    worldSiteOrigin[1] = vec3i(4,4,2);
   }
 
   Chunk[] getNewChunks()
@@ -25,9 +38,12 @@ class World
     newChunks.clear();
   }
 
+  // == Block/Chunk Get/Set methods
+
   /// Add a column of blocks to the world
   void setBlockColumn(int i, int j, int k, int depth, Block block)
   {
+    //writeln("world.setBlockColumn...");
     foreach(d; 0..depth)
     {
       setBlock(i, j, k-d, block);
@@ -38,13 +54,17 @@ class World
   /// coordinates ijk are relative to the central chunk
   void setBlock(int i, int j, int k, Block block)
   {
+    //writeln("world.setBlock... ", i, j, k, " ", block);
     vec3i chunkSite = vec3i(
       4 + cast(int)floor((cast(float)i)/8),
       4 + cast(int)floor((cast(float)j)/8),
       2 + cast(int)floor((cast(float)k)/4)
     );
+    //writeln("Now calling getCreateChunk... ");
     Chunk chunk = getCreateChunk(chunkSite);
+    //writeln("Now calling sitemodulo... ");
     vec3i blockSite = Calc.siteModulo(vec3i(i,j,k));
+    //writeln("Now ready to set the block in chunk... ");
     chunk.setBlock(blockSite.x, blockSite.y, blockSite.z, block);
   }
 
@@ -56,7 +76,7 @@ class World
 
     while(maxRank >= this.topRegion.getRank()) // the topregion must be 1 rank above max rank in worldsite.
     {
-      this.topRegion = new Region(this.topRegion);
+      _topRegion = new Region(this.topRegion);
     }
 
     IRegionContainer container = this.topRegion;
@@ -70,25 +90,19 @@ class World
       else
       {
         vec3i regSite = worldSite[container.getRank() - 1];
-        // writeln(format!"now using worldSite to access a region of rank %s regSite: %s"((container.getRank() - 1), regSite.toString())); // DEBUG
         container = cast(IRegionContainer) container.getCreateRegion(regSite);
       }
     }
+
     auto chunk = container.getRegion(worldSite[1]);
     if(chunk is null)
     {
-      // writeln(format!"now creating chunk in world with container site %s"(container.getSite().toString())); // DEBUG
-      if(container is null) writeln("A chunk is being created with a null container :/");
-      auto newChunk = new Chunk(container, worldSite[1]);
+      auto newChunk = new Chunk(this, container, worldSite[1]);
       newChunks ~= newChunk;
       return newChunk;
     }
     else
     {
-      /*string msg1 = format!"NOT creating chunk in region: %s site: %s"(container.getRank(), container.getSite().toString());
-      string msg2 = format!"Chunk would have had site: %s"(worldSite[1].toString());
-      writeln( msg1 );
-      writeln( msg2 );*/
       return cast(Chunk) chunk;
     }
   }
@@ -131,28 +145,35 @@ class World
     return cast(Chunk)getCreateAdjacentRegion(chunk, side);
   }
 
+  IRegionContainer getCreateContainer(IRegion region)
+  {
+    IRegionContainer container;
+    if(region is this.topRegion)
+    {
+      container = new Region(region);
+      _topRegion = container;
+    }
+    else
+    {
+      container = region.getContainer();
+    }
+    return container;
+  }
+
   IRegion getCreateAdjacentRegion(IRegion region, SideDetails side)
   {
     vec3i adjSite = region.getSite() + side.normali;
     bool outOfBounds = Calc.isOutOfBounds(adjSite);
+    IRegionContainer container = getCreateContainer(region);
     if(outOfBounds)
     {
-      Region adjacentContainer = cast(Region)getCreateAdjacentRegion(region.getContainer(), side);
+      Region adjacentContainer = cast(Region)getCreateAdjacentRegion(container, side);
       vec3i inBoundsSite = Calc.siteModulo(adjSite);
-      return adjacentContainer.getCreateRegion(inBoundsSite);
+      if(region.getRank() > 2) return adjacentContainer.getCreateRegion(inBoundsSite);
+      else return new Chunk(this, adjacentContainer, inBoundsSite);
     }
     else
     {
-      IRegionContainer container;
-      if(region is this.topRegion)
-      {
-        container = new Region(region);
-        this.topRegion = container;
-      }
-      else
-      {
-        container = region.getContainer();
-      }
       return container.getCreateRegion(adjSite);
     }
   }

@@ -1,17 +1,6 @@
 import gfm.math;
-
 import engine;
-
-import chunk, quadgenerator_pnt, blocks, sides, world, sitecalculator;
-
-vec3i siteIndexToSite(int index)
-{
-  int i = index%8;
-  int k = index/64;
-  int j = (index-k*64)/8;
-  return vec3i(i,j,k);
-}
-
+import chunk_world, quadbuilder_pnt, sides, block_textures;
 alias ChunkMesh = Mesh!VertexPNT;
 
 class ChunkMeshBuilder
@@ -23,7 +12,7 @@ class ChunkMeshBuilder
     this.world = world;
   }
 
-  bool isTranslucent(Block block)
+  static bool isTranslucent(Block block)
   {
     if(block == Block.EMPTY) return true;
     if(block == Block.WATER) return true;
@@ -32,22 +21,37 @@ class ChunkMeshBuilder
 
   ChunkMesh buildChunkMesh(Chunk chunk)
   {
+    VertexPNT[] vertices;
+    uint[] indices;
+    updateMeshData(chunk, vec3f(0,0,0), vertices, indices);
+    return Mesh!VertexPNT(vertices, indices);
+  }
+
+  ChunkMesh buildChunkMesh(Chunk[] chunks, Chunk originChunk)
+  {
+    VertexPNT[] vertices;
+    uint[] indices;
+    foreach(chunk; chunks)
+    {
+      vec3f offset = chunk.getPositionRelativeTo(originChunk);
+      updateMeshData(chunk, offset, vertices, indices);
+    }
+    return Mesh!VertexPNT(vertices, indices);
+  }
+
+  private void updateMeshData(Chunk chunk, vec3f vertexOffset, ref VertexPNT[] vertices, ref uint[] indices)
+  {
     /*import std.stdio, std.datetime;
     import std.datetime.stopwatch : benchmark, StopWatch;
     StopWatch sw;
     sw.start();*/
 
-    VertexPNT[] vertices;
-    uint[] indices;
-    int counter;
     foreach(int i, block; chunk.blocks)
     {
       if(block == Block.EMPTY) continue;
-      counter++;
-      vec3i site = siteIndexToSite(i);
+      vec3i site = SiteCalculator.siteIndexToSite(i);
       foreach(sd; allSides) // sd is short for SideDetails
       {
-        if(sd.side == Side.Bottom) continue;
         vec3i adjSite = site + cast(vec3i)sd.normal;
         bool withinBounds = adjSite.x >= 0 && adjSite.x < 8 && adjSite.y >= 0 && adjSite.y < 8 && adjSite.z >= 0 && adjSite.z < 4;
         Block adjBlock = Block.EMPTY;
@@ -67,7 +71,7 @@ class ChunkMeshBuilder
         if(shouldAddQuad)
         {
           vec3f quadCenter = (block == Block.WATER && sd.side == Side.Top) ? vec3f(0, 0, 0.85) : sd.normal;
-          vec3f faceCenter = vec3f(site.x + 0.5*(1 + quadCenter.x), site.y + 0.5*(1 + quadCenter.y), site.z + 0.5*(1 + quadCenter.z));
+          vec3f faceCenter = site + 0.5*(vec3f(1,1,1) + quadCenter) + vertexOffset;
           vertices ~= generateQuad(sd.side, faceCenter, getAtlasij(block, sd.side));
           uint li = 0;
           if(indices.length > 0) li = indices[indices.length-1]+1;
@@ -76,14 +80,8 @@ class ChunkMeshBuilder
       }
     }
 
-    /*if(vertices.length == 0)
-    {
-      writeln("No vertices were create for this chunk...");
-    }
-    Duration dur = sw.peek();
+    /*Duration dur = sw.peek();
     sw.stop();
     writeln("Chunk mesh build time: ", dur.toString());*/
-    
-    return Mesh!VertexPNT(vertices, indices);
   }
 }

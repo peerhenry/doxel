@@ -4,13 +4,19 @@ import gfm.opengl, gfm.sdl2;
 import engine;
 import doxelgame, inputhandler, player;
 
+static bool toRun = true;
+unittest{ toRun=false; }
+
 void main()
 {
-	run();
+	if(toRun)run();
 }
 
 void run()
 {
+	import core.memory;
+	GC.disable();
+	
 	int width = 1920;
 	int height = 1080;
 	Context context = new Context(width, height, "Doxel");

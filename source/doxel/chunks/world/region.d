@@ -50,7 +50,7 @@ class Region: BaseRegion, IRegionContainer
     IRegion reg = regions[index];
     if(reg is null)
     {
-      assert(rank > 2);
+      assert(rank > 2); // make syre the region will not create a chunk; that's world's job
       reg = new Region(this, site);
       regions[index] = reg;
     }

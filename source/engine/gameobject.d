@@ -1,7 +1,7 @@
 import gfm.math;
 import engine.interfaces, model, vertex;
 
-class GameObject : Updatable, Drawable
+class GameObject : IGameObject
 {
   Updatable updateBehavior;
   UniformSetter uniformSetBehavior;

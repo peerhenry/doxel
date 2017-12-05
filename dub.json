@@ -25,5 +25,18 @@
 				"imageformats": "~>6.1.2"
 			}
 		}
+	],
+
+	"configurations": [
+		{
+			"name": "unittest",
+			"targetType": "executable",
+			"targetPath": "bin",
+			"dependencies": {
+				"gfm": "~>6.2.12",
+				"imageformats": "~>6.1.2",
+				"doxel:engine": "*"
+			}
+		}
 	]
 }

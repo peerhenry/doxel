@@ -211,7 +211,7 @@ class Camera : Updatable
     return Frustum!float(leftPlane, rightPlane, topPlane, bottomPlane, nearPlane, farPlane);
   }
 
-  int contains(Frustum!float frustum, vec3f[8] boxCorners) pure const nothrow
+  int contains(Frustum!float frustum, vec3f[8] boxCorners) // pure const nothrow
   {
     int totalIn = 0;
     // test all 8 corners against the 6 sides
@@ -231,7 +231,6 @@ class Camera : Updatable
           --inCount;
         }
       }
-
       // were all the points outside of plane p?
       if (inCount == 0)
         return frustum.OUTSIDE;

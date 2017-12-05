@@ -1,18 +1,19 @@
-import std.array, std.stdio, std.random;
+import std.array, std.stdio, std.random, std.math;
 import gfm.opengl, gfm.math, gfm.sdl2;
 import engine;
 import inputhandler, player,
-    blocks, chunk, region, world, limiter,
+    chunk_world, chunk_game,
+    blocks, limiter,
     skybox, quadoverlay, skeletonscene,
-    chunkmeshbuilder, chunkmodelfactory, chunkobjectfactory, chunkgameobject,
-    perlin, heightmap, worldsurfacechunkgenerator;
+    perlin, heightmap;
 
 class DoxelGame : Game
 {
   GLProgram program;
   Camera camera;
   Player player;
-  ChunkGameObject[] gameObjects;
+  ChunkObjectFactory chunkObjFac;
+  BaseChunkGameObject[] gameObjects;
   OpenGL gl;
   InputHandler input;
   VertexSpecification!VertexPNT vertexSpec;
@@ -40,7 +41,7 @@ class DoxelGame : Game
     input.setGame(this);
     this.camera = camera;
     this.player = player;
-    //camera.setPosition(vec3f(0,0,10));
+    camera.setPosition(vec3f(0,0,10));
     this.skybox = new Skybox(gl, camera);
     this.createProgram();
     this.texture = new Texture(gl, this.program, "Atlas", "resources/atlas.png"); // gl, program, shader uniform name, image path
@@ -104,18 +105,18 @@ class DoxelGame : Game
     int seed = 3;
     Perlin perlin = new Perlin(seed);
 
-    int cellSize = 128;
-    int depthRange = 64;
+    int cellSize = 128;  // 128
+    int depthRange = 64; // 64
     HeightMap heightMap = new HeightMap(perlin, cellSize, depthRange); // noise, cell size, range
     this.world = new World();
 
     ChunkMeshBuilder meshBuilder = new ChunkMeshBuilder(world);
     ChunkModelFactory modelFactory = new ChunkModelFactory(gl, vertexSpec, meshBuilder);
     UniformSetter modelSetter = new PvmNormalMatrixSetter(this.program, this.camera, "PVM", "NormalMatrix"); // strings are uniform names in shader
-    this.modelLimiter = new Limiter(20);
-    this.chunkLimiter = new Limiter(50);
-    auto chunkFac = new ChunkObjectFactory(this.camera, modelFactory, modelSetter, modelLimiter);
-    this.generator = new WorldSurfaceChunkGenerator(world, heightMap, chunkFac);
+    this.modelLimiter = new Limiter(12);
+    this.chunkLimiter = new Limiter(40);
+    this.chunkObjFac = new ChunkObjectFactory(this.camera, modelFactory, modelSetter, modelLimiter);
+    this.generator = new WorldSurfaceChunkGenerator(world, heightMap);
   }
 
   void setGlSettings()
@@ -123,7 +124,6 @@ class DoxelGame : Game
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
-    glDisable(GL_CULL_FACE);
     glFrontFace(GL_CW); // clockwise faces are front
     glClearColor(100.0/255, 149.0/255, 237.0/255, 1.0); // cornflower blue
   }
@@ -132,7 +132,7 @@ class DoxelGame : Game
   {
     this.program.uniform("LightDirection").set( vec3f(0.8, -0.3, -1.0).normalized() );
     this.program.uniform("LightColor").set( vec3f(1.0, 1.0, 1.0) );
-    this.program.uniform("AmbientColor").set( vec3f(0.2, 0.2, 0.2) );
+    this.program.uniform("AmbientColor").set( vec3f(0.4, 0.4, 0.4) );
     this.program.uniform("MaterialColor").set( vec3f(1, 1, 1) );
     this.program.uniform("PVM").set( mat4f.identity );
     this.program.uniform("NormalMatrix").set( mat3f.identity );
@@ -158,7 +158,9 @@ class DoxelGame : Game
     return (centerRel_ij.toString() in visited) !is null;
   }
 
-  vec2i lastCamRel_ij = vec2i(0,0);
+  import std.stdio;
+
+  vec2i lastCamRel_ij = vec2i(9999,9999);
   vec2i[] genSites;
   int genSiteIndex;
   int genSiteCounter;
@@ -173,7 +175,7 @@ class DoxelGame : Game
 
     // spawn chunks around the player
     // get chunksite containing the camera.
-    import std.math;
+
     vec2i centerRel_ij = vec2i(
       cast(int)floor(camera.position.x/8),
       cast(int)floor(camera.position.y/8)
@@ -188,7 +190,7 @@ class DoxelGame : Game
       int shell = 0;
       vec2i next_ij = centerRel_ij;
       vec2i[3] dirs = [vec2i(-1,-1), vec2i(1,-1), vec2i(1,1)];
-      while(shell < 40)
+      while(shell < 60)
       {
         // go up
         next_ij = next_ij + vec2i(0,1);
@@ -216,26 +218,38 @@ class DoxelGame : Game
       genSiteIndex = 0;
     }
 
+    int columsPerModel = 4;
     while(!chunkLimiter.limitReached() && genSiteCounter > 0)
     {
       auto genSite = genSites[genSiteIndex];
       genSiteIndex++;
-      if(!hasBeenVisited(genSite))
+      if(!hasBeenVisited( genSite ))
       {
-        ChunkGameObject[] newObjects = generator.generateChunkColumn( genSite );
-        chunkLimiter.increment();
-        this.gameObjects ~= newObjects;
-        markAsVisited(genSite);
+        generator.generateChunkColumn( genSite );
+        markAsVisited( genSite );
+        bool createNewModel = genSiteIndex % columsPerModel == 0;
+
+        if(createNewModel)
+        {
+          BaseChunkGameObject newObject = chunkObjFac.createChunkObject( world.getNewChunks() );
+
+          //VertexP[8] lineVerts;
+          //foreach(i, v; newObject.getBBCorners()) lineVerts[i] = VertexP(v);
+          //skeletonScene.createHexaHedron(lineVerts);
+
+          chunkLimiter.increment();
+          this.gameObjects ~= newObject;
+          world.clearNewChunks();
+        }
       }
       genSiteCounter--;
     }
-
     foreach(obj; this.gameObjects)
     {
       obj.update();
     }
   }
-
+  
   void draw()
   {
     skybox.draw();
@@ -252,7 +266,7 @@ class DoxelGame : Game
     }
     program.unuse();
 
-    // skeletonScene.draw();
+    skeletonScene.draw();
 
     /*renderer.clear();
     renderer.copy(sdlTexture, 10, 10);

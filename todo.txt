@@ -11,14 +11,15 @@ shadow mapping
 calculate vectors based on a reference region, not world center (remove any world center methods)
 
 == backlog
-block deletion
-inventory system
-block addition
-FPS counter
+refactor make file names use underscores
 make region coordinate system is variable (not just 8-8-4)
 put rendering and world loading on different threads
 distant chunk rendering
 infinite world depth
+block deletion
+inventory system
+block addition
+FPS counter
 
 
 BUG: water side textures...

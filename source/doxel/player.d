@@ -9,6 +9,7 @@ class Player
   bool grounded;
   float speed = 5; // world float unit per second
 
+  private float half_bb_w;
   private vec3f minOffset;
   private vec3f maxOffset;
   private vec3f velocity;
@@ -20,24 +21,38 @@ class Player
     this.cam = cam;
     this.camHeight = height;
     crownHeight = 0.1*height;
-    float half_bb_w = camHeight/8;
+    this.half_bb_w = camHeight/8;
     minOffset = vec3f(-half_bb_w, -half_bb_w, -camHeight);
     maxOffset = vec3f(half_bb_w, half_bb_w, camHeight);
     movedir = vec3f(0,0,0);
+    grounded = true;
   }
 
   /// returns axially aligned bounding box
   box3f getAABB()
   {
-    vec3f min = cam.position + minOffset;
-    vec3f max = cam.position + maxOffset;
+    vec3f min = cam.position + vec3f(-half_bb_w, -half_bb_w, -camHeight);
+    vec3f max = cam.position + vec3f(half_bb_w, half_bb_w, crownHeight);
     return box3f(min, max);
+  }
+
+  bool pointIsInBlock(vec3f point)
+  {
+    return false;
   }
 
   bool standsOnGround()
   {
     // todo; implement
-    return true;
+    vec3f b1 = cam.position + vec3f(half_bb_w, half_bb_w, -camHeight - 0.01);
+    if(pointIsInBlock(b1)) return true;
+    vec3f b2 = cam.position + vec3f(half_bb_w, -half_bb_w, -camHeight - 0.01);
+    if(pointIsInBlock(b2)) return true;
+    vec3f b3 = cam.position + vec3f(-half_bb_w, half_bb_w, -camHeight - 0.01);
+    if(pointIsInBlock(b3)) return true;
+    vec3f b4 = cam.position + vec3f(-half_bb_w, -half_bb_w, -camHeight - 0.01);
+    if(pointIsInBlock(b4)) return true;
+    return false;
   }
 
   void move(byte moveByte)
@@ -91,9 +106,9 @@ class Player
 
   void update()
   {
-    if(grounded)
+    if( grounded )
     {
-      if(!standsOnGround())
+      if( !standsOnGround() )
       {
         grounded = false;
       }
@@ -104,11 +119,11 @@ class Player
       velocity.z += 0.1*velocity.z;
     }
     /*vec3f move_velocity = vec3f(0,0,0);
-    if(isMoving)
+    if( isMoving )
     {
       move_velocity = movedir*speed;
     }
-    if(isMoving)
+    if( isMoving || !grounded )
     {
       float dt = 20.0/1000;
       vec3f ds = (move_velocity + velocity)*dt;

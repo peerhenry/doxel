@@ -1,18 +1,5 @@
 import gfm.math;
-
-import sides;
-
-enum Block: byte
-{
-  EMPTY
-  , GRASS
-  , DIRT
-  , STONE
-  , SAND
-  , TRUNK
-  , LEAVES
-  , WATER
-}
+import sides, blocks;
 
 vec2i getAtlasij(Block block, Side side)
 {
