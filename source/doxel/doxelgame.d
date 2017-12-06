@@ -4,7 +4,7 @@ import engine;
 import inputhandler, player,
     chunk_world, chunk_game,
     blocks, limiter,
-    skybox, quadoverlay, skeletonscene,
+    skybox, chunkscene, quadoverlay, skeletonscene,
     perlin, heightmap;
 
 class DoxelGame : Game
@@ -12,17 +12,14 @@ class DoxelGame : Game
   GLProgram program;
   Camera camera;
   Player player;
-  ChunkObjectFactory chunkObjFac;
-  BaseChunkGameObject[] gameObjects;
   OpenGL gl;
   InputHandler input;
-  VertexSpecification!VertexPNT vertexSpec;
-  Texture texture;
+
   Skybox skybox;
+  ChunkScene chunkScene;
   SkeletonScene skeletonScene;
 
   World world;
-  Limiter modelLimiter;
   Limiter chunkLimiter;
   WorldSurfaceChunkGenerator generator;
 
@@ -42,11 +39,13 @@ class DoxelGame : Game
     this.camera = camera;
     this.player = player;
     camera.setPosition(vec3f(0,0,10));
-    this.skybox = new Skybox(gl, camera);
-    this.createProgram();
-    this.texture = new Texture(gl, this.program, "Atlas", "resources/atlas.png"); // gl, program, shader uniform name, image path
 
-    createSkeletonScene();
+    setWorldGenerator();
+
+    // create scenes
+    skybox = new Skybox(gl, camera);
+    chunkScene = new ChunkScene(gl, camera, world);
+    skeletonScene = new SkeletonScene(gl, camera);
 
     // load font
     /*this.ttf = new SDLTTF(context.sdl);
@@ -62,13 +61,7 @@ class DoxelGame : Game
 
   ~this()
   {
-    program.destroy;
-    vertexSpec.destroy;
-    foreach(m; gameObjects)
-    {
-      m.destroy;
-    }
-    texture.destroy;
+    chunkScene.destroy;
     skybox.destroy;
     skeletonScene.destroy;
 
@@ -79,25 +72,9 @@ class DoxelGame : Game
     //this.font.destroy;*/
   }
 
-  void createSkeletonScene()
-  {
-    skeletonScene = new SkeletonScene(gl, camera);
-  }
-
-  /// Creates a shader program 
-  void createProgram()
-  {
-    // dispense with loading and compiling of individual shaders
-    string[] shader_source = readLines("source/doxel/glsl/standard.glsl");
-    this.program = new GLProgram(gl, shader_source);
-    this.vertexSpec = new VertexSpecification!VertexPNT(this.program);
-  }
-
   void initialize()
   {
-    setWorldGenerator();
     setGlSettings();
-    initUniforms();
   }
 
   void setWorldGenerator()
@@ -109,13 +86,8 @@ class DoxelGame : Game
     int depthRange = 64; // 64
     HeightMap heightMap = new HeightMap(perlin, cellSize, depthRange); // noise, cell size, range
     this.world = new World();
-
-    ChunkMeshBuilder meshBuilder = new ChunkMeshBuilder(world);
-    ChunkModelFactory modelFactory = new ChunkModelFactory(gl, vertexSpec, meshBuilder);
-    UniformSetter modelSetter = new PvmNormalMatrixSetter(this.program, this.camera, "PVM", "NormalMatrix"); // strings are uniform names in shader
-    this.modelLimiter = new Limiter(12);
+    
     this.chunkLimiter = new Limiter(40);
-    this.chunkObjFac = new ChunkObjectFactory(this.camera, modelFactory, modelSetter, modelLimiter);
     this.generator = new WorldSurfaceChunkGenerator(world, heightMap);
   }
 
@@ -126,17 +98,6 @@ class DoxelGame : Game
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CW); // clockwise faces are front
     glClearColor(100.0/255, 149.0/255, 237.0/255, 1.0); // cornflower blue
-  }
-
-  void initUniforms()
-  {
-    this.program.uniform("LightDirection").set( vec3f(0.8, -0.3, -1.0).normalized() );
-    this.program.uniform("LightColor").set( vec3f(1.0, 1.0, 1.0) );
-    this.program.uniform("AmbientColor").set( vec3f(0.4, 0.4, 0.4) );
-    this.program.uniform("MaterialColor").set( vec3f(1, 1, 1) );
-    this.program.uniform("PVM").set( mat4f.identity );
-    this.program.uniform("NormalMatrix").set( mat3f.identity );
-    this.texture.bind();
   }
 
   void clickRemoveBlock()
@@ -158,24 +119,13 @@ class DoxelGame : Game
     return (centerRel_ij.toString() in visited) !is null;
   }
 
-  import std.stdio;
-
   vec2i lastCamRel_ij = vec2i(9999,9999);
   vec2i[] genSites;
   int genSiteIndex;
   int genSiteCounter;
 
-  void update(double dt_ms)
+  void updateWorldGeneration(double dt_ms)
   {
-    modelLimiter.reset();
-    chunkLimiter.reset();
-    input.update();
-    camera.update(dt_ms);
-    player.update(dt_ms);
-
-    // spawn chunks around the player
-    // get chunksite containing the camera.
-
     vec2i centerRel_ij = vec2i(
       cast(int)floor(camera.position.x/8),
       cast(int)floor(camera.position.y/8)
@@ -231,41 +181,34 @@ class DoxelGame : Game
 
         if(createNewModel)
         {
-          BaseChunkGameObject newObject = chunkObjFac.createChunkObject( world.getNewChunks() );
+          auto newObject = chunkScene.createChunkObject(world.getNewChunks());
 
           //VertexP[8] lineVerts;
           //foreach(i, v; newObject.getBBCorners()) lineVerts[i] = VertexP(v);
           //skeletonScene.createHexaHedron(lineVerts);
 
           chunkLimiter.increment();
-          this.gameObjects ~= newObject;
           world.clearNewChunks();
         }
       }
       genSiteCounter--;
     }
-    foreach(obj; this.gameObjects)
-    {
-      obj.update(dt_ms);
-    }
+  }
+
+  void update(double dt_ms)
+  {
+    chunkLimiter.reset();
+    input.update();
+    camera.update(dt_ms);
+    player.update(dt_ms);
+    updateWorldGeneration(dt_ms);
+    chunkScene.update(dt_ms);
   }
   
   void draw()
   {
     skybox.draw();
-    this.program.use();
-    this.texture.bind();
-    Frustum!float frustum = camera.getFrustum(); // maybe move this to update?
-    foreach(obj; this.gameObjects)
-    {
-      vec3f[8] boxCorners = obj.getBBCorners();
-      if(camera.contains(frustum, boxCorners) != frustum.OUTSIDE)
-      {
-        obj.draw();
-      }
-    }
-    program.unuse();
-
+    chunkScene.draw();
     skeletonScene.draw();
 
     /*renderer.clear();
