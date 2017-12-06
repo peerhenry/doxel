@@ -4,7 +4,7 @@ first person (movement, jumping, collision detection)
 - make update a function of dt
 
 == next
-refactor: extract chunk scene from doxel game and move DI and registrations to game.
+refactor: extract world generation
 read settings from config file
 translucent water (2 render calls for chunks containing water)
 shadow mapping
@@ -20,6 +20,7 @@ block deletion
 inventory system
 block addition
 FPS counter
+better spiral algorithm
 
 
 BUG: water side textures...
