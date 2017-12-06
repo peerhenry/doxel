@@ -58,6 +58,8 @@ class Context
   {
     game.initialize();
     double time = 0;
+    uint lastSecond = 0;
+    uint frameCount = 0;
     uint lastTime = SDL_GetTicks();
     bool shouldQuit;
     while(!shouldQuit)
@@ -68,9 +70,17 @@ class Context
       double dt = now - lastTime;
       lastTime = now;
       time += 0.001 * dt;
+      frameCount++;
+      if(now > lastSecond + 1000)
+      {
+        import std.stdio;
+        writeln("FPS: ", frameCount);
+        lastSecond = now;
+        frameCount = 0;
+      }
 
       // update
-      game.update();
+      game.update(dt);
 
       glViewport(0, 0, window.getWidth(), window.getHeight());
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

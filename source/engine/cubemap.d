@@ -16,6 +16,13 @@ class CubeMap
     , string path_left 
     , string path_right)
   {
+    import std.file;
+    assert(exists(path_top));
+    assert(exists(path_bottom));
+    assert(exists(path_front));
+    assert(exists(path_back));
+    assert(exists(path_left));
+    assert(exists(path_right));
     IFImage img_top = read_image(path_top, ColFmt.RGB);
     IFImage img_bottom = read_image(path_bottom, ColFmt.RGB);
     IFImage img_front = read_image(path_front, ColFmt.RGB);
@@ -38,7 +45,6 @@ class CubeMap
   {
     this.program = program;
     this.uniformName = uniformName;
-
     this.tex = new GLTexture(gl, GL_TEXTURE_CUBE_MAP);
     this.tex.setMinFilter(GL_NEAREST); // GL_LINEAR_MIPMAP_LINEAR
     this.tex.setMagFilter(GL_NEAREST); // GL_LINEAR

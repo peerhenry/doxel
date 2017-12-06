@@ -31,9 +31,9 @@ class GameObject : IGameObject
     }
   }
 
-  void update()
+  void update(double dt_ms)
   {
-    this.updateBehavior.update();
+    this.updateBehavior.update(dt_ms);
   }
 
   void draw()

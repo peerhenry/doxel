@@ -1,5 +1,4 @@
-public import drawable;
-public import updatable;
+import drawable, updatable;
 
 interface Game : Updatable, Drawable
 {

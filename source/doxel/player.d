@@ -1,7 +1,7 @@
 import gfm.math;
 import engine;
 
-class Player
+class Player: Updatable
 {
   Camera cam;
   float crownHeight;
@@ -104,7 +104,7 @@ class Player
     }
   }
 
-  void update()
+  void update(double dt_ms)
   {
     if( grounded )
     {

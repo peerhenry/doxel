@@ -165,13 +165,13 @@ class DoxelGame : Game
   int genSiteIndex;
   int genSiteCounter;
 
-  void update()
+  void update(double dt_ms)
   {
     modelLimiter.reset();
     chunkLimiter.reset();
     input.update();
-    camera.update();
-    player.update();
+    camera.update(dt_ms);
+    player.update(dt_ms);
 
     // spawn chunks around the player
     // get chunksite containing the camera.
@@ -246,7 +246,7 @@ class DoxelGame : Game
     }
     foreach(obj; this.gameObjects)
     {
-      obj.update();
+      obj.update(dt_ms);
     }
   }
   

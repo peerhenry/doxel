@@ -1,9 +1,9 @@
 interface Updatable
 {
-  void update();
+  void update(double dt_ms);
 }
 
 class DefaultUpdate : Updatable
 {
-  void update(){};
+  void update(double dt_ms){};
 }

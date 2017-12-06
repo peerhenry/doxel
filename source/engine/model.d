@@ -34,13 +34,13 @@ class Model(VertexType) : Drawable
       ibo.bind();
       this.vao.unbind();
     }
-    this.vbo.destroy;
-    this.ibo.destroy;
   }
 
   ~this()
   {
     this.vao.destroy;
+    this.vbo.destroy;
+    this.ibo.destroy;
   }
 
   /// Binds the VAO and calls glDrawElements

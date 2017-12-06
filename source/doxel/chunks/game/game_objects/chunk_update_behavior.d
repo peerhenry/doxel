@@ -42,7 +42,7 @@ class ChunkUpdateBehavior: BaseChunkUpdate
 
   alias VertexModel = Model!VertexPNT;
 
-  void update()
+  void update(double dt_ms)
   {
     if(chunkIsWithinLoadRange())
     {

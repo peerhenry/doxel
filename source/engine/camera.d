@@ -74,7 +74,7 @@ class Camera : Updatable
     updateView = false;
   }
 
-  void update()
+  void update(double dt_ms)
   {
     if(updateView) calculateTargetAndView();
   }

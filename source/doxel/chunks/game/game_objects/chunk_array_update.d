@@ -38,7 +38,7 @@ class ChunkArrayUpdate: BaseChunkUpdate
     return sqDistance;
   }
   
-  void update()
+  void update(double dt_ms)
   {
     if(chunkIsWithinLoadRange())
     {
