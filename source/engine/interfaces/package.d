@@ -3,5 +3,5 @@ public import drawable;
 public import updatable;
 public import game;
 public import uniformsetter;
-public import igameobject;
-public import iboundingboxcontainer;
+public import i_bounding_box_container;
+public import scene_object;

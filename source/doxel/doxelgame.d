@@ -1,9 +1,9 @@
 import std.array;
 import gfm.opengl, gfm.math, gfm.sdl2;
 import engine;
-import inputhandler, player,
-    blocks, chunk_world, chunk_game, chunk_scene_world_generator,
-    skybox, chunkscene, quadoverlay, skeletonscene;
+import inputhandler, player, limiter,
+    blocks, doxel_world, doxel_stage, doxel_scene, chunk_stage_world_generator,
+    skybox, quadoverlay, skeletonscene;
 
 class DoxelGame : Game
 {
@@ -14,11 +14,13 @@ class DoxelGame : Game
   InputHandler input;
 
   World world;
+  ChunkStage chunkStage;
 
   Skybox skybox;
-  ChunkScene chunkScene;
-  SkeletonScene skeletonScene;
-  ChunkSceneWorldGenerator generator;
+  ChunkScene chunkSceneStandard;
+  ChunkScene chunkScenePoints;
+  //SkeletonScene skeletonScene;
+  ChunkStageWorldGenerator generator;
 
   SDLTTF ttf;
   SDLFont font;
@@ -41,10 +43,24 @@ class DoxelGame : Game
 
     // create scenes
     skybox = new Skybox(gl, camera);
-    chunkScene = new ChunkScene(gl, camera, world);
-    skeletonScene = new SkeletonScene(gl, camera);
+    //skeletonScene = new SkeletonScene(gl, camera);
 
-    generator = new ChunkSceneWorldGenerator(camera, world, chunkScene);
+    SceneProgramStandard sceneProgram = new SceneProgramStandard(gl);
+    UniformSetter pvmNormalSetter = new PvmNormalMatrixSetter( sceneProgram.program, camera, "PVM", "NormalMatrix" );
+    StandardMeshBuilder standardMeshBuilder = new StandardMeshBuilder(world);
+    IChunkModelFactory standardModelFac = new StandardChunkModelFactory(gl, sceneProgram.vertexSpec, standardMeshBuilder);
+    IChunkSceneObjectFactory standardSceneObjectFac = new StandardSceneObjectFactory(standardModelFac, pvmNormalSetter);
+    chunkSceneStandard = new ChunkScene(camera, sceneProgram, standardSceneObjectFac);
+
+    chunkScenePoints = new ChunkScene(camera, new SceneProgramPoints(gl, camera), null);
+
+    Zone[int] zones = [1: Zone(500.0, 550.0, chunkSceneStandard)];
+    Limiter modelLimiter = new Limiter(5); // limits the number of models created
+    IChunkStageObjectFactory chunkStageObjectFactory = new ChunkStageObjectFactory(camera, zones, modelLimiter);
+    chunkStage = new ChunkStage(chunkStageObjectFactory, modelLimiter);
+
+    Limiter chunkLimiter = new Limiter(40); // limits the number of chunk columns checked
+    generator = new ChunkStageWorldGenerator(camera, world, chunkStage, chunkLimiter);
 
     // load font
     /*this.ttf = new SDLTTF(context.sdl);
@@ -60,9 +76,11 @@ class DoxelGame : Game
 
   ~this()
   {
-    chunkScene.destroy;
+    chunkStage.destroy;
+    chunkSceneStandard.destroy;
+    chunkScenePoints.destroy;
     skybox.destroy;
-    skeletonScene.destroy;
+    //skeletonScene.destroy;
 
     /*this.ttf.destroy;
     this.renderer.destroy;
@@ -98,14 +116,15 @@ class DoxelGame : Game
     camera.update(dt_ms);
     player.update(dt_ms);
     generator.update(dt_ms);
-    chunkScene.update(dt_ms);
+    chunkStage.update(dt_ms);
   }
   
   void draw()
   {
     skybox.draw();
-    chunkScene.draw();
-    skeletonScene.draw();
+    chunkSceneStandard.draw();
+    chunkScenePoints.draw();
+    //skeletonScene.draw();
 
     /*renderer.clear();
     renderer.copy(sdlTexture, 10, 10);

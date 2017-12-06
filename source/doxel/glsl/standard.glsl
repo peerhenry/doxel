@@ -30,7 +30,6 @@ in vec3 Color;
 in vec2 TexCoord;
 out vec4 FragColor;
 uniform sampler2D Atlas;
-uniform sampler2D Skybox;
 void main()
 {
   vec3 texColor = texture(Atlas, TexCoord).rgb;

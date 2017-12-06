@@ -12,4 +12,3 @@ public import pvm_normalmatrix_setter;
 public import pvm_setter;
 public import texture;
 public import cubemap;
-public import gameobject;

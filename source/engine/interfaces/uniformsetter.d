@@ -1,5 +1,5 @@
-import gameobject;
+import scene_object;
 interface UniformSetter
 {
-  void setUniforms(GameObject gameobject);
+  void setUniforms(SceneObject sceneobject);
 }

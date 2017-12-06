@@ -1,5 +1,5 @@
 import gfm.math, gfm.opengl;
-import engine, gameobject;
+import engine;
 
 class PvmNormalMatrixSetter : UniformSetter
 {
@@ -16,9 +16,9 @@ class PvmNormalMatrixSetter : UniformSetter
     this.normalName = normalMatrixUniformName;
   }
 
-  void setUniforms(GameObject gameobject)
+  void setUniforms(SceneObject sceneObject)
   {
-    mat4f model = gameobject.getModelMatrix();
+    mat4f model = sceneObject.modelMatrix;
     mat3f normalMatrix = cast(mat3f)model;
     mat4f pvm = this.camera.projection * this.camera.view * model;
     this.program.uniform(pvmName).set( pvm ); // PVM

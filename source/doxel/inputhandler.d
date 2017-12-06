@@ -90,7 +90,7 @@ class InputHandler
     player.move(moveByte);
 
     // DEBUG
-    if(sdl.keyboard.isPressed(SDLK_l))
+    /*if(sdl.keyboard.isPressed(SDLK_l))
     {
       if(!wasPressed)
       {
@@ -98,7 +98,7 @@ class InputHandler
         wasPressed = true;
       }
     }
-    else wasPressed = false;
+    else wasPressed = false;*/
   }
   bool wasPressed = false;
 }

@@ -5,54 +5,37 @@ import updatable;
 
 class Camera : Updatable
 {
-  private:
-  // matrices
-  mat4f m_proj;
-  mat4f m_view;
-  
-  vec3f pos;
-  float theta;
-  float phi;
-  vec3f dir;
-  vec3f right;
-  vec3f relup;
-  vec3f target;
+  private{
+    mat4f m_proj;
+    mat4f m_view;
+    
+    vec3f pos;
+    float theta;
+    float phi;
+    vec3f dir;
+    vec3f right;
+    vec3f relup;
+    vec3f target;
 
-  float FOVY;
-  float ratio;
-  float near;
-  float far;
-  float near_height;
-  float near_width;
+    float FOVY;
+    float ratio;
+    float near;
+    float far;
+    float near_height;
+    float near_width;
 
-  bool updateView;
-  // matrix calculations
-  void calculateTargetAndView()
-  {
-    float sint = sin(theta);
-    float cost = cos(theta);
-    float cosp = cos(phi);
-    float sinp = sin(phi);    
-    this.dir = vec3f(cost*cosp, sint*cosp, sinp);
-    this.right = vec3f(sint, -cost, 0);
-    this.relup = vec3f(-cost*sinp, -sint*sinp, cosp);
-    this.target = this.pos + this.dir;
-    calculateView();
+    Frustum!float frustum;
+
+    bool updateView;
   }
 
-  void calculateView()
-  {
-    this.m_view = mat4f.lookAt(pos, target, up);
-  }
-
-  void calculateProjection()
-  {
-    this.m_proj = mat4f.perspective(this.FOVY, this.ratio, this.near, this.far);
-    this.near_height = 2*near*tan(this.FOVY/2);
-    this.near_width = this.near_height*this.ratio;
-  }
-
-  public:
+  @property mat4f projection() { return m_proj; }
+  @property mat4f view() { return m_view; }
+  @property vec3f direction() { return dir; }
+  @property vec3f directionRight() { return right; }
+  @property vec3f position() { return pos; }
+  float getTheta(){return theta;}
+  float getPhi(){return phi;}
   
   static const vec3f up = vec3f(0.0, 0.0, 1.0);
 
@@ -77,6 +60,67 @@ class Camera : Updatable
   void update(double dt_ms)
   {
     if(updateView) calculateTargetAndView();
+  }
+
+  // update/set calculations
+  private void calculateTargetAndView()
+  {
+    float sint = sin(theta);
+    float cost = cos(theta);
+    float cosp = cos(phi);
+    float sinp = sin(phi);    
+    this.dir = vec3f(cost*cosp, sint*cosp, sinp);
+    this.right = vec3f(sint, -cost, 0);
+    this.relup = vec3f(-cost*sinp, -sint*sinp, cosp);
+    this.target = this.pos + this.dir;
+    calculateView();
+  }
+
+  private void calculateView()
+  {
+    this.m_view = mat4f.lookAt(pos, target, up);
+    calculateFrustum();
+  }
+
+  private void calculateProjection()
+  {
+    this.m_proj = mat4f.perspective(this.FOVY, this.ratio, this.near, this.far);
+    this.near_height = 2*near*tan(this.FOVY/2);
+    this.near_width = this.near_height*this.ratio;
+    calculateFrustum();
+  }
+
+  private void calculateFrustum()
+  {
+    vec3f nc = pos + near*dir;
+    vec3f fc = pos + far*dir;
+    Planef nearPlane = Planef(nc, dir);
+    Planef farPlane = Planef(fc, -dir);
+
+    vec3f halfright = this.right*near_width*0.5;
+    vec3f r = (nc + halfright) - pos;
+    r.normalize();
+    vec3f normalRight = relup.cross(r);
+    Planef rightPlane = Planef(pos, normalRight);
+
+    vec3f l = (nc - halfright) - pos;
+    l.normalize();
+    vec3f normalLeft = l.cross(relup);
+    Planef leftPlane = Planef(pos, normalLeft);
+
+    vec3f halfup = this.relup*near_height*0.5;
+    vec3f u = (nc + halfup) - pos;
+    u.normalize();
+    vec3f normalTop = u.cross(right);
+    Planef topPlane = Planef(pos, normalTop);
+
+    vec3f b = (nc - halfup) - pos;
+    b.normalize();
+    vec3f normalBottom = right.cross(b);
+    Planef bottomPlane = Planef(pos, normalBottom);
+
+    // left, right, top, bottom, near, far
+    frustum = Frustum!float(leftPlane, rightPlane, topPlane, bottomPlane, nearPlane, farPlane);
   }
 
   // SETTERS
@@ -123,37 +167,9 @@ class Camera : Updatable
     updateView = true;
   }
 
-  // GETTERS
-  @property mat4f projection()
-  {
-    return m_proj;
-  }
-
-  @property mat4f view()
-  {
-    return m_view;
-  }
-
-  @property vec3f direction()
-  {
-    return dir;
-  }
-
-  @property vec3f directionRight()
-  {
-    return right;
-  }
-
-  @property vec3f position()
-  {
-    return pos;
-  }
-
-  float getTheta(){return theta;}
-  float getPhi(){return phi;}
-
   alias Planef = Plane!float;
 
+  // this was made for skeletonscene
   vec3f[8] getFrustumCorners()
   {
     vec3f[8] output;
@@ -178,40 +194,8 @@ class Camera : Updatable
     return output;
   }
 
-  Frustum!float getFrustum()
-  {
-    vec3f nc = pos + near*dir;
-    vec3f fc = pos + far*dir;
-    Planef nearPlane = Planef(nc, dir);
-    Planef farPlane = Planef(fc, -dir);
-
-    vec3f halfright = this.right*near_width*0.5;
-    vec3f r = (nc + halfright) - pos;
-    r.normalize();
-    vec3f normalRight = relup.cross(r);
-    Planef rightPlane = Planef(pos, normalRight);
-
-    vec3f l = (nc - halfright) - pos;
-    l.normalize();
-    vec3f normalLeft = l.cross(relup);
-    Planef leftPlane = Planef(pos, normalLeft);
-
-    vec3f halfup = this.relup*near_height*0.5;
-    vec3f u = (nc + halfup) - pos;
-    u.normalize();
-    vec3f normalTop = u.cross(right);
-    Planef topPlane = Planef(pos, normalTop);
-
-    vec3f b = (nc - halfup) - pos;
-    b.normalize();
-    vec3f normalBottom = right.cross(b);
-    Planef bottomPlane = Planef(pos, normalBottom);
-
-    // left, right, top, bottom, near, far
-    return Frustum!float(leftPlane, rightPlane, topPlane, bottomPlane, nearPlane, farPlane);
-  }
-
-  int contains(Frustum!float frustum, vec3f[8] boxCorners) // pure const nothrow
+  // this needs to be extracted into something else...
+  bool frustumContains(vec3f[8] boxCorners) // pure const nothrow
   {
     int totalIn = 0;
     // test all 8 corners against the 6 sides
@@ -233,17 +217,17 @@ class Camera : Updatable
       }
       // were all the points outside of plane p?
       if (inCount == 0)
-        return frustum.OUTSIDE;
+        return false; // frustum.OUTSIDE;
 
       // check if they were all on the right side of the plane
-      totalIn += ptIn;
+      //totalIn += ptIn;
     }
-
+    return true;
     // so if totalIn is 6, then all are inside the view
-    if(totalIn == 6)
+    /*if(totalIn == 6)
       return frustum.INSIDE;
 
     // we must be partly in then otherwise
-    return frustum.INTERSECT;
+    return frustum.INTERSECT;*/
   }
 }
