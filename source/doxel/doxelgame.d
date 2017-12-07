@@ -53,7 +53,7 @@ class DoxelGame : Game
     chunkSceneStandard = new ChunkScene(gl, camera, sceneProgram, standardSceneObjectFac);
 
     SceneProgramPoints sceneProgramPoints = new SceneProgramPoints(gl, camera);
-    UniformSetter setter2 = new PointUniformSetter(sceneProgramPoints.program, camera, "PVM", "NormalMatrix");
+    UniformSetter setter2 = new PointUniformSetter(sceneProgramPoints.program, camera, "PVM", "Model");
     //UniformSetter setter2 = new PvmSetter(sceneProgramPoints.program, camera, "PVM");
     PointMeshBuilder pointMeshBuilder = new PointMeshBuilder(world);
     IChunkModelFactory pointModelFac = new PointChunkModelFactory(gl, sceneProgramPoints.vertexSpec, pointMeshBuilder);

@@ -10,12 +10,12 @@ uniform vec3 LightDirection;
 uniform vec3 LightColor;
 uniform vec3 AmbientColor;
 uniform mat4 PVM;
+uniform mat4 Model;
 uniform vec3 CamPos;
-uniform mat3 NormalMatrix;
 
 void main()
 {
-  vec3 n = normalize(NormalMatrix*(position - CamPos));
+  vec3 n = normalize( vec3(Model*vec4(position, 1.0)) - CamPos );
   vec3 ray = normalize(LightDirection);
   Color = color * ( AmbientColor + LightColor * max( dot(ray, n), 0.0 ) );
   gl_Position = PVM * vec4(position, 1.0);

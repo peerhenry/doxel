@@ -6,14 +6,14 @@ class PointUniformSetter : UniformSetter
   private Camera camera;
   private GLProgram program;
   string pvmName;
-  string normalName;
+  string modelUniformName;
 
-  this(GLProgram program, Camera camera, string pvmUniformName, string normalMatrixUniformName)
+  this(GLProgram program, Camera camera, string pvmUniformName, string modelUniformName)
   {
     this.camera = camera;
     this.program = program;
     this.pvmName = pvmUniformName;
-    this.normalName = normalMatrixUniformName;
+    this.modelUniformName = modelUniformName;
   }
 
   private float distanceFromCam(SceneObject sceneObject)
@@ -25,11 +25,10 @@ class PointUniformSetter : UniformSetter
   void setUniforms(SceneObject sceneObject)
   {
     mat4f model = sceneObject.modelMatrix;
-    mat3f normalMatrix = cast(mat3f)model;
     mat4f pvm = this.camera.projection * this.camera.view * model;
     float dist = distanceFromCam(sceneObject);
     glPointSize(1300.0/dist);
     this.program.uniform(pvmName).set( pvm ); // PVM
-    this.program.uniform(normalName).set( normalMatrix ); // NormalMatrix
+    this.program.uniform(modelUniformName).set( model ); // Model
   }
 }

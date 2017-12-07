@@ -55,34 +55,11 @@ class PointMeshBuilder : IChunkMeshBuilder!VertexPC
         if(adjBlock == Block.EMPTY)
         {
           vec3f position = site + vec3f(0.5, 0.5, 0.5) + vertexOffset;
-          vec3f color = getColor(block);
+          vec3f color = getBlockColor(block);
           vertices ~= VertexPC(position, color);
           break;
         }
       }
-    }
-  }
-
-  private vec3f getColor(Block block)
-  {
-    final switch(block)
-    {
-      case Block.EMPTY:
-        return vec3f(0,0,0);
-      case Block.GRASS:
-        return vec3f(0,0.8,0);
-      case Block.STONE:
-        return vec3f(0.6,0.5,0.4);
-      case Block.DIRT:
-        return vec3f(0.6,0.4,0.1);
-      case Block.SAND:
-        return vec3f(0.9,0.9,0.2);
-      case Block.TRUNK:
-        return vec3f(0.6,0.4,0.1);
-      case Block.LEAVES:
-        return vec3f(0,0.7,0);
-      case Block.WATER:
-        return vec3f(0.5,0.6,0.95);
     }
   }
 }

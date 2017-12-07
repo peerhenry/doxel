@@ -4,7 +4,6 @@ first person (movement, jumping, collision detection)
 - make update a function of dt
 
 == next
-refactor: extract world generation
 read settings from config file
 translucent water (2 render calls for chunks containing water)
 shadow mapping
