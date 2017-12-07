@@ -120,9 +120,10 @@ class ChunkStageWorldGenerator
         if(createGameObject)
         {
           chunkStage.createStageObject(world.getNewChunks());
-          chunkLimiter.increment();
           world.clearNewChunks();
         }
+        
+        chunkLimiter.increment();
       }
       genSiteCounter--;
     }
