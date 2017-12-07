@@ -17,8 +17,7 @@ class PvmSetter : UniformSetter
   void setUniforms(SceneObject sceneObject)
   {
     mat4f model = sceneObject.modelMatrix;
-    mat3f normalMatrix = cast(mat3f)model;
     mat4f pvm = this.camera.projection * this.camera.view * model;
-    this.program.uniform(pvmName).set( pvm ); // PVM
+    this.program.uniform( pvmName ).set( pvm ); // PVM
   }
 }

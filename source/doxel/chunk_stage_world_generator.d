@@ -11,7 +11,7 @@ class ChunkStageWorldGenerator
   private Limiter chunkLimiter;
 
   private bool[string] visited;
-  private vec2i lastCamRel_ij = vec2i(int.max, int.max);
+  private vec2i lastCamRel_ij = vec2i(900, 900);
   private vec2i[] genSites;
   private int genSiteIndex;
   private int genSiteCounter;
@@ -60,8 +60,9 @@ class ChunkStageWorldGenerator
       cast(int)floor(cam.position.y/8)
     );
 
-    if(centerRel_ij != lastCamRel_ij)
+    if(centerRel_ij != lastCamRel_ij && centerRel_ij.squaredDistanceTo(lastCamRel_ij) > 16)
     {
+      newSpiral = true;
       genSites = [centerRel_ij];
       genSiteIndex = 0;
       genSiteCounter = 1;
@@ -69,7 +70,7 @@ class ChunkStageWorldGenerator
       int shell = 0;
       vec2i next_ij = centerRel_ij;
       vec2i[3] dirs = [vec2i(-1,-1), vec2i(1,-1), vec2i(1,1)];
-      while(shell < 50)
+      while(shell < 120)
       {
         // go up
         next_ij = next_ij + vec2i(0,1);
@@ -98,9 +99,14 @@ class ChunkStageWorldGenerator
     }
   }
 
+  bool newSpiral;
+  import std.stdio;
+
   void createStageObjects()
   {
     int columsPerObject = 4;
+    if(genSiteCounter > 100) columsPerObject = 8;
+    if(genSiteCounter > 1000) columsPerObject = 16;
     while(!chunkLimiter.limitReached() && genSiteCounter > 0)
     {
       auto genSite = genSites[genSiteIndex];
@@ -119,6 +125,11 @@ class ChunkStageWorldGenerator
         }
       }
       genSiteCounter--;
+    }
+    if(genSiteCounter == 0 && newSpiral)
+    {
+      writeln("genSiteCounter has reached zero.");
+      newSpiral = false;
     }
   }
 

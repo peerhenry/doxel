@@ -2,6 +2,6 @@ import engine;
 import chunk;
 interface IChunkSceneObjectFactory
 {
-  SceneObject createSceneObject(Chunk chunks);
+  SceneObject createSceneObject(Chunk chunk);
   SceneObject createSceneObject(Chunk[] chunks);
 }

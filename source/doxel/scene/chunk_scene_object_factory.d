@@ -3,7 +3,7 @@ import gfm.math, gfm.opengl;
 import engine;
 import doxel_world, doxel_scene, i_chunk_scene_object_factory;
 
-class StandardSceneObjectFactory: IChunkSceneObjectFactory
+class ChunkSceneObjectFactory: IChunkSceneObjectFactory
 {
   private IChunkModelFactory modelFactory;
   private UniformSetter uniformSetter;

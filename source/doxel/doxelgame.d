@@ -49,12 +49,27 @@ class DoxelGame : Game
     UniformSetter pvmNormalSetter = new PvmNormalMatrixSetter( sceneProgram.program, camera, "PVM", "NormalMatrix" );
     StandardMeshBuilder standardMeshBuilder = new StandardMeshBuilder(world);
     IChunkModelFactory standardModelFac = new StandardChunkModelFactory(gl, sceneProgram.vertexSpec, standardMeshBuilder);
-    IChunkSceneObjectFactory standardSceneObjectFac = new StandardSceneObjectFactory(standardModelFac, pvmNormalSetter);
-    chunkSceneStandard = new ChunkScene(camera, sceneProgram, standardSceneObjectFac);
+    IChunkSceneObjectFactory standardSceneObjectFac = new ChunkSceneObjectFactory(standardModelFac, pvmNormalSetter);
+    chunkSceneStandard = new ChunkScene(gl, camera, sceneProgram, standardSceneObjectFac);
 
-    chunkScenePoints = new ChunkScene(camera, new SceneProgramPoints(gl, camera), null);
+    SceneProgramPoints sceneProgramPoints = new SceneProgramPoints(gl, camera);
+    UniformSetter setter2 = new PointUniformSetter(sceneProgramPoints.program, camera, "PVM", "NormalMatrix");
+    //UniformSetter setter2 = new PvmSetter(sceneProgramPoints.program, camera, "PVM");
+    PointMeshBuilder pointMeshBuilder = new PointMeshBuilder(world);
+    IChunkModelFactory pointModelFac = new PointChunkModelFactory(gl, sceneProgramPoints.vertexSpec, pointMeshBuilder);
+    IChunkSceneObjectFactory pointsSceneObjectFac = new ChunkSceneObjectFactory(pointModelFac, setter2);
+    chunkScenePoints = new ChunkScene(gl, camera, sceneProgramPoints, pointsSceneObjectFac);
 
-    Zone[int] zones = [1: Zone(500.0, 550.0, chunkSceneStandard)];
+    gl.runtimeCheck();
+
+    float pLoadRange = 500;
+    float tLoadRange = 300;
+
+    Zone[int] zones = [
+      1: Zone(pLoadRange, 1.1*pLoadRange, chunkScenePoints),
+      2: Zone(tLoadRange, 1.1*tLoadRange, chunkSceneStandard)
+    ];
+
     Limiter modelLimiter = new Limiter(5); // limits the number of models created
     IChunkStageObjectFactory chunkStageObjectFactory = new ChunkStageObjectFactory(camera, zones, modelLimiter);
     chunkStage = new ChunkStage(chunkStageObjectFactory, modelLimiter);
@@ -101,6 +116,7 @@ class DoxelGame : Game
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CW); // clockwise faces are front
     glClearColor(100.0/255, 149.0/255, 237.0/255, 1.0); // cornflower blue
+    glPointSize(1.0);
   }
 
   void clickRemoveBlock()

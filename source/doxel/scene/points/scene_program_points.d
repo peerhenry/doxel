@@ -33,7 +33,8 @@ class SceneProgramPoints: ISceneProgram
     _program.uniform("LightColor").set( vec3f(1.0, 1.0, 1.0) );
     _program.uniform("AmbientColor").set( vec3f(0.4, 0.4, 0.4) );
     _program.uniform("PVM").set( mat4f.identity );
-    _program.uniform("ViewDir").set( cam.direction );
+    _program.uniform("NormalMatrix").set( mat3f.identity );
+    _program.uniform("CamPos").set( cam.position );
   }
 
   ~this()
@@ -44,6 +45,6 @@ class SceneProgramPoints: ISceneProgram
 
   void setUniforms()
   {
-    _program.uniform("ViewDir").set( cam.direction );
+    _program.uniform("CamPos").set( cam.position );
   }
 }

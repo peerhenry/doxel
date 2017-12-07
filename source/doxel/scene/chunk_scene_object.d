@@ -8,15 +8,18 @@ class ChunkSceneObject: SceneObject
     Drawable drawBehavior;
     vec3f min;
     vec3f max;
+    vec3f pos;
   }
 
   @property mat4f modelMatrix() { return _modelMatrix; }
+  @property vec3f position() { return pos; }
 
   this(UniformSetter setter, mat4f modelMatrix, Drawable drawBehavior, vec3f min, vec3f max)
   {
     this.setter = setter;
     this._modelMatrix = modelMatrix;
     this.drawBehavior = drawBehavior;
+    pos = (min+max)*0.5;
   }
 
   ~this()

@@ -8,9 +8,10 @@ class ChunkScene
   private DList!SceneObject sceneObjects;
   private IChunkSceneObjectFactory fac;
   private ISceneProgram sceneProgram;
-
-  this(Camera camera, ISceneProgram sceneProgram, IChunkSceneObjectFactory fac)
+  OpenGL gl;
+  this(OpenGL gl, Camera camera, ISceneProgram sceneProgram, IChunkSceneObjectFactory fac)
   {
+    this.gl = gl;
     this.camera = camera;
     this.sceneProgram = sceneProgram;
     this.fac = fac;
@@ -45,7 +46,9 @@ class ChunkScene
   void draw()
   {
     sceneProgram.program.use();
+    gl.runtimeCheck();//DEBUG
     sceneProgram.setUniforms();
+    gl.runtimeCheck();//DEBUG
     foreach(obj; sceneObjects)
     {
       vec3f[8] boxCorners = obj.getBBCorners();
@@ -55,5 +58,6 @@ class ChunkScene
       }
     }
     sceneProgram.program.unuse();
+    gl.runtimeCheck();//DEBUG
   }
 }
