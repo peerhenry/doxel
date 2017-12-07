@@ -7,7 +7,7 @@ class Player: Updatable
   float crownHeight;
   float camHeight;
   bool grounded;
-  float speed = 5; // world float unit per second
+  float speed = 7; // world float unit per second
 
   private float half_bb_w;
   private vec3f minOffset;
@@ -118,17 +118,18 @@ class Player: Updatable
       // fall
       velocity.z += 0.1*velocity.z;
     }
-    /*vec3f move_velocity = vec3f(0,0,0);
+    vec3f move_velocity = vec3f(0,0,0);
     if( isMoving )
     {
       move_velocity = movedir*speed;
+      vec3f ds = move_velocity*.1;
+      cam.translate(ds);
     }
-    if( isMoving || !grounded )
+    /*if( isMoving || !grounded )
     {
       float dt = 20.0/1000;
       vec3f ds = (move_velocity + velocity)*dt;
       cam.translate(ds);
     }*/
-    if(isMoving) cam.translate(movedir*0.5);
   }
 }

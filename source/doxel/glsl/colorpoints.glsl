@@ -17,7 +17,7 @@ void main()
 {
   vec3 n = normalize(NormalMatrix*(position - CamPos));
   vec3 ray = normalize(LightDirection);
-  Color = color * ( AmbientColor + LightColor * max( dot(ray, -n), 0.0 ) );
+  Color = color * ( AmbientColor + LightColor * max( dot(ray, n), 0.0 ) );
   gl_Position = PVM * vec4(position, 1.0);
 }
 #endif

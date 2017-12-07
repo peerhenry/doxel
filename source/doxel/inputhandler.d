@@ -89,6 +89,12 @@ class InputHandler
     byte moveByte = f + (b<<1) + (l<<2) + (r<<3) + (u<<4) + (d<<5);
     player.move(moveByte);
 
+    if(sdl.keyboard.isPressed(SDLK_LSHIFT))
+    {
+      player.speed = 30.0;
+    }
+    else player.speed = 15.0;
+
     // DEBUG
     /*if(sdl.keyboard.isPressed(SDLK_l))
     {

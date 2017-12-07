@@ -70,7 +70,7 @@ class ChunkStageWorldGenerator
       int shell = 0;
       vec2i next_ij = centerRel_ij;
       vec2i[3] dirs = [vec2i(-1,-1), vec2i(1,-1), vec2i(1,1)];
-      while(shell < 120)
+      while(shell < 200)
       {
         // go up
         next_ij = next_ij + vec2i(0,1);

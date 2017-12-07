@@ -62,7 +62,7 @@ class DoxelGame : Game
 
     gl.runtimeCheck();
 
-    float pLoadRange = 500;
+    float pLoadRange = 600;
     float tLoadRange = 300;
 
     Zone[int] zones = [
@@ -138,8 +138,9 @@ class DoxelGame : Game
   void draw()
   {
     skybox.draw();
-    chunkSceneStandard.draw();
     chunkScenePoints.draw();
+    glClear(GL_DEPTH_BUFFER_BIT);
+    chunkSceneStandard.draw();
     //skeletonScene.draw();
 
     /*renderer.clear();
