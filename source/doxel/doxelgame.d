@@ -19,7 +19,6 @@ class DoxelGame : Game
   Skybox skybox;
   ChunkScene chunkSceneStandard;
   ChunkScene chunkScenePoints;
-  //SkeletonScene skeletonScene;
   ChunkStageWorldGenerator generator;
 
   SDLTTF ttf;
@@ -43,15 +42,24 @@ class DoxelGame : Game
 
     // create scenes
     skybox = new Skybox(gl, camera);
-    //skeletonScene = new SkeletonScene(gl, camera);
 
+    setupStandardScene();
+    setupPointScene();
+    setupStage();
+  }
+
+  void setupStandardScene()
+  {
     SceneProgramStandard sceneProgram = new SceneProgramStandard(gl);
     UniformSetter pvmNormalSetter = new PvmNormalMatrixSetter( sceneProgram.program, camera, "PVM", "NormalMatrix" );
     StandardMeshBuilder standardMeshBuilder = new StandardMeshBuilder(world);
     IChunkModelFactory standardModelFac = new StandardChunkModelFactory(gl, sceneProgram.vertexSpec, standardMeshBuilder);
     IChunkSceneObjectFactory standardSceneObjectFac = new ChunkSceneObjectFactory(standardModelFac, pvmNormalSetter);
     chunkSceneStandard = new ChunkScene(gl, camera, sceneProgram, standardSceneObjectFac);
+  }
 
+  void setupPointScene()
+  {
     SceneProgramPoints sceneProgramPoints = new SceneProgramPoints(gl, camera);
     UniformSetter setter2 = new PointUniformSetter(sceneProgramPoints.program, camera, "PVM", "Model");
     //UniformSetter setter2 = new PvmSetter(sceneProgramPoints.program, camera, "PVM");
@@ -59,10 +67,11 @@ class DoxelGame : Game
     IChunkModelFactory pointModelFac = new PointChunkModelFactory(gl, sceneProgramPoints.vertexSpec, pointMeshBuilder);
     IChunkSceneObjectFactory pointsSceneObjectFac = new ChunkSceneObjectFactory(pointModelFac, setter2);
     chunkScenePoints = new ChunkScene(gl, camera, sceneProgramPoints, pointsSceneObjectFac);
+  }
 
-    gl.runtimeCheck();
-
-    float pLoadRange = 600;
+  void setupStage()
+  {
+    float pLoadRange = 1000;
     float tLoadRange = 300;
 
     Zone[int] zones = [
@@ -76,17 +85,6 @@ class DoxelGame : Game
 
     Limiter chunkLimiter = new Limiter(40); // limits the number of chunk columns checked
     generator = new ChunkStageWorldGenerator(camera, world, chunkStage, chunkLimiter);
-
-    // load font
-    /*this.ttf = new SDLTTF(context.sdl);
-    this.font = new SDLFont(this.ttf, "resources/fonts/consola.ttf", 14);
-    this.surface = this.font.renderTextSolid("HIHAHO YOYOYOYOYOYO", SDL_Color(0,0,0,255));
-    this.renderer = new SDL2Renderer(surface);
-    this.sdlTexture = new SDL2Texture(renderer, surface);
-    this.surface.destroy;
-    this.font.destroy;*/
-
-    //this.quadModel = new QuadOverlay(gl);
   }
 
   ~this()
@@ -95,13 +93,6 @@ class DoxelGame : Game
     chunkSceneStandard.destroy;
     chunkScenePoints.destroy;
     skybox.destroy;
-    //skeletonScene.destroy;
-
-    /*this.ttf.destroy;
-    this.renderer.destroy;
-    this.sdlTexture.destroy;
-    //this.surface.destroy;
-    //this.font.destroy;*/
   }
 
   void initialize()
@@ -141,14 +132,5 @@ class DoxelGame : Game
     chunkScenePoints.draw();
     glClear(GL_DEPTH_BUFFER_BIT);
     chunkSceneStandard.draw();
-    //skeletonScene.draw();
-
-    /*renderer.clear();
-    renderer.copy(sdlTexture, 10, 10);
-    renderer.present();*/
-    
-    //glBindTexture(GL_TEXTURE_2D, sdlTexture.access());
-    //glColor3f(1, 0, 0);
-    //quadModel.draw(); 
   }
 }
