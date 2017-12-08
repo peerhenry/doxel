@@ -3,6 +3,7 @@ import gfm.opengl, gfm.math, gfm.sdl2;
 import engine;
 import inputhandler, player, limiter,
     blocks, doxel_world, doxel_stage, doxel_scene, chunk_stage_world_generator,
+    perlin, doxel_height_map, height_provider, height_generator, world_surface_generator,
     skybox, quadoverlay, skeletonscene;
 
 class DoxelGame : Game
@@ -70,17 +71,26 @@ class DoxelGame : Game
 
   void setupStage()
   {
-    float pLoadRange = 1000;
-    float tLoadRange = 300;
+    float pLoadRange = 160;
+    float tLoadRange = 80;
 
     Zone[int] zones = [
       1: Zone(pLoadRange, 1.1*pLoadRange, chunkScenePoints),
       2: Zone(tLoadRange, 1.1*tLoadRange, chunkSceneStandard)
     ];
 
-    Limiter chunkLimiter = new Limiter(40); // limits the number of chunk columns checked
+    Limiter chunkLimiter = new Limiter(20); // limits the number of chunk columns checked
     Limiter modelLimiter = new Limiter(5); // limits the number of models created
-    ChunkStageWorldGenerator generator = new ChunkStageWorldGenerator(camera, world, chunkLimiter);
+
+    int seed = 3;
+    Perlin perlin = new Perlin(seed);
+    int cellSize = 128;  // 128
+    int depthRange = 64; // 64
+    HeightGenerator heightGenerator = new HeightGenerator(perlin, cellSize, depthRange); // noise, cell size, range
+    auto heightMap = new HeightMap();
+    IHeightProvider provider = new HeightProvider(heightGenerator, heightMap);
+    WorldSurfaceGenerator surfaceGenerator = new WorldSurfaceGenerator(world, provider, seed);
+    ChunkStageWorldGenerator generator = new ChunkStageWorldGenerator(camera, world, chunkLimiter, surfaceGenerator);
     IChunkStageObjectFactory chunkStageObjectFactory = new ChunkStageObjectFactory(camera, zones, modelLimiter);
     chunkStage = new ChunkStage(chunkStageObjectFactory, modelLimiter, generator);
   }

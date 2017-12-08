@@ -1,6 +1,6 @@
 import gfm.math;
 import engine;
-import i_chunk_mesh_builder, doxel_world, quadbuilder_pnt, sides, block_textures;
+import i_chunk_mesh_builder, doxel_world, quadbuilder_pnt, sides, block_textures, ichunk;
 
 class PointMeshBuilder : IChunkMeshBuilder!VertexPC
 {
@@ -24,7 +24,7 @@ class PointMeshBuilder : IChunkMeshBuilder!VertexPC
     foreach(chunk; chunks)
     {
       vec3f offset = chunk.getPositionRelativeTo(originChunk);
-      updateMeshData(chunk, offset, vertices);
+      if(chunk.hasAnyVisisbleBlocks) updateMeshData(chunk, offset, vertices);
     }
     return Mesh!VertexPC(vertices, []);
   }
@@ -34,7 +34,7 @@ class PointMeshBuilder : IChunkMeshBuilder!VertexPC
     foreach(int i, block; chunk.blocks)
     {
       bool shouldAddBlock = false;
-      if(block == Block.EMPTY) continue;
+      if(block == Block.EMPTY || block == Block.PULP) continue;
       vec3i site = calculator.siteIndexToSite(i);
       foreach(sd; allSides) // sd is short for SideDetails
       {
@@ -44,7 +44,7 @@ class PointMeshBuilder : IChunkMeshBuilder!VertexPC
         if(withinBounds) adjBlock = chunk.getBlock(adjSite.x, adjSite.y, adjSite.z);
         else
         {
-          Chunk adjChunk = world.getAdjacentChunk(chunk, sd);
+          IChunk adjChunk = world.getAdjacentChunk(chunk, sd);
           if(adjChunk !is null)
           {
             adjSite = calculator.siteModulo(adjSite);

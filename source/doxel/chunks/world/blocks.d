@@ -8,4 +8,5 @@ public enum Block: byte
   , TRUNK
   , LEAVES
   , WATER
+  , PULP
 }

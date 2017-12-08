@@ -1,6 +1,6 @@
 import std.math, std.array, std.stdio, std.format;
 import gfm.math;
-import iregion, iregioncontainer, chunk, region, sides, blocks, sitecalculator, worldsettings;
+import sides, doxel_world;
 
 alias Calc = SiteCalculator;
 
@@ -107,9 +107,9 @@ class World
     }
   }
 
-  Chunk getAdjacentChunk(Chunk chunk, SideDetails side)
+  IChunk getAdjacentChunk(IChunk chunk, SideDetails side)
   {
-    return cast(Chunk)getAdjacentRegion(chunk, side);
+    return cast(IChunk)getAdjacentRegion(chunk, side);
   }
 
   IRegion getAdjacentRegion(IRegion region, SideDetails side)
@@ -181,10 +181,9 @@ class World
 
 unittest{
   import testrunner;
-  runtest("Chunk center is half chunk size", delegate bool(){
+  runtest("Chunk center is half chunk size", delegate void(){
     assert(regionCenter.x == regionSize.x/2);
     assert(regionCenter.y == regionSize.y/2);
     assert(regionCenter.z == regionSize.z/2);
-    return true;
   });
 }

@@ -31,6 +31,7 @@ class ChunkStageObject: Updatable
     SceneObject sceneObject;
     vec3f min, max, center;
     Limiter modelLimiter;
+    bool validToModel;
   }
 
   this(Camera cam, Zone[int] zones, Chunk[] chunks, Limiter modelLimiter)
@@ -110,15 +111,30 @@ class ChunkStageObject: Updatable
 
   void updateModel()
   {
+    validateModel();
     if(newZoneIndex != boundZoneIndex && !modelLimiter.limitReached())
     {
       if(boundZoneIndex > 0) removeFromScene();
-      if(newZoneIndex > 0)
+      if(newZoneIndex > 0 && validToModel)
       {
         auto scene = zones[newZoneIndex].scene;
-        sceneObject = scene.createSceneObject(chunks); 
+        sceneObject = scene.createSceneObject(chunks);
+        modelLimiter.increment();
       }
       boundZoneIndex = newZoneIndex;
+    }
+  }
+
+  void validateModel()
+  {
+    validToModel = false;
+    foreach(chunk; chunks)
+    {
+      if(chunk.hasAnyVisisbleBlocks)
+      {
+        validToModel = true;
+        break;
+      }
     }
   }
 

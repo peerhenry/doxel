@@ -1,12 +1,12 @@
 import std.random, std.math;
 import gfm.math;
 import engine;
-import world_surface_chunk_generator, limiter, world, chunkstage, perlin, height_generator;
+import world_surface_generator, limiter, world, chunkstage, perlin, height_generator, height_map, height_provider;
 class ChunkStageWorldGenerator
 {
   private Camera cam;
   private World world;
-  private WorldSurfaceChunkGenerator generator;
+  private WorldSurfaceGenerator surfaceGenerator;
   private Limiter chunkLimiter;
 
   private bool[string] visited;
@@ -15,23 +15,12 @@ class ChunkStageWorldGenerator
   private int genSiteIndex;
   private int genSiteCounter;
 
-  this(Camera cam, World world, Limiter chunkLimiter)
+  this(Camera cam, World world, Limiter chunkLimiter, WorldSurfaceGenerator surfaceGenerator)
   {
     this.cam = cam;
     this.world = world;
     this.chunkLimiter = chunkLimiter;
-    setWorldGenerator();
-  }
-
-  void setWorldGenerator()
-  {
-    int seed = 3;
-    Perlin perlin = new Perlin(seed);
-
-    int cellSize = 128;  // 128
-    int depthRange = 64; // 64
-    HeightGenerator heightGenerator = new HeightGenerator(perlin, cellSize, depthRange); // noise, cell size, range
-    this.generator = new WorldSurfaceChunkGenerator(world, heightGenerator);
+    this.surfaceGenerator = surfaceGenerator;
   }
 
   void update(ChunkStage chunkStage)
@@ -102,16 +91,16 @@ class ChunkStageWorldGenerator
 
   void createStageObjects(ChunkStage chunkStage)
   {
-    int columsPerObject = 4;
-    if(genSiteCounter > 100) columsPerObject = 8;
-    if(genSiteCounter > 1000) columsPerObject = 16;
+    int columsPerObject = 1;
+    //if(genSiteCounter > 100) columsPerObject = 8;
+    //if(genSiteCounter > 1000) columsPerObject = 16;
     while(!chunkLimiter.limitReached() && genSiteCounter > 0)
     {
       auto genSite = genSites[genSiteIndex];
       genSiteIndex++;
       if(!hasBeenVisited( genSite ))
       {
-        generator.generateChunkColumn( genSite );
+        surfaceGenerator.generateChunkColumn( genSite );
         markAsVisited( genSite );
         bool createGameObject = genSiteIndex % columsPerObject == 0;
 

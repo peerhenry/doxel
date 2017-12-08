@@ -54,7 +54,7 @@ class SiteCalculator : CoordCalculator
   import std.array, std.conv;
 
   // Speed-up CTFE conversions
-  private static string ctIntToString(int n) pure nothrow
+  private string ctIntToString(int n) pure nothrow
   {
     static immutable string[16] table = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
     if (n < 10)
@@ -80,14 +80,15 @@ class SiteCalculator : CoordCalculator
   {
     vec3i newSite = site;
     mixin(generateLoopCode!("newSite[@] = newSite[@] % regionSize[@]; if(newSite[@] < 0) newSite[@] += regionSize[@];", 3));
-
-    /*newSite.x = newSite.x % regionSize.x;
-    if(newSite.x < 0) newSite.x += regionSize.x;
-    newSite.y = newSite.y % regionSize.y;
-    if(newSite.y < 0) newSite.y += regionSize.y;
-    newSite.z = newSite.z % regionSize.z;
-    if(newSite.z < 0) newSite.z += regionSize.z;*/
     return newSite;
+  }
+
+  /// calculates site modulo of a site dimension with given region size along that dimension.
+  pure int siteCompModulo(int siteComp, int regCompSize)
+  {
+    int modSitec = siteComp % regCompSize;
+    if(modSitec < 0) modSitec += regCompSize;
+    return modSitec;
   }
 
   /// Converts a global chunk site to a world site

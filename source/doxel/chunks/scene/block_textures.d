@@ -3,7 +3,7 @@ import sides, blocks;
 
 vec2i getAtlasij(Block block, Side side)
 {
-  final switch(block)
+  switch(block)
   {
     case Block.EMPTY:
       return vec2i(8, 8);
@@ -24,12 +24,14 @@ vec2i getAtlasij(Block block, Side side)
       return vec2i(5, 3);
     case Block.WATER:
       return vec2i(15, 12);
+    default:
+      return vec2i(8, 8);
   }
 }
 
 vec3f getBlockColor(Block block)
 {
-  final switch(block)
+  switch(block)
   {
     case Block.EMPTY:
       return vec3f(0,0,0);
@@ -47,5 +49,7 @@ vec3f getBlockColor(Block block)
       return vec3f(0,0.55,0);
     case Block.WATER:
       return vec3f(0.5,0.6,0.95);
+    default:
+      return vec3f(0.5,0.5,0.5);
   }
 }

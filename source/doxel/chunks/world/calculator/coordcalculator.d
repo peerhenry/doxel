@@ -29,41 +29,42 @@ unittest
 {
   import testrunner;
 
-  runtest("worldSiteRelativeTo only separated on rank 1", delegate bool() {
-    vec3i[int] worldSite, worldSiteRef;
-    worldSite[1] = vec3i(2,2,2);
-    worldSite[2] = vec3i(3,4,1);
-    worldSiteRef[1] = vec3i(1,1,1);
-    worldSiteRef[2] = vec3i(3,4,1);
-    vec3f result = CoordCalculator.worldSiteRelativeTo(worldSite, worldSiteRef);
-    assertEqual(cast(float)regionWidth, result.x);
-    assertEqual(cast(float)regionLength, result.y);
-    assertEqual(cast(float)regionHeight, result.z);
-    return true;
-  });
+  runsuite("coordcalculator", delegate void(){
 
-  runtest("worldSiteRelativeTo separated by rank 1 and rank 2", delegate bool() {
-    vec3i[int] worldSite, worldSiteRef;
-    worldSite[1] = vec3i(2,2,2);
-    worldSite[2] = vec3i(3,4,1);
-    worldSiteRef[1] = vec3i(1,1,1);
-    worldSiteRef[2] = vec3i(2,3,0);
-    vec3f result = CoordCalculator.worldSiteRelativeTo(worldSite, worldSiteRef);
-    assertEqual(pow(regionWidth, 2) + cast(float)regionWidth, result.x);
-    assertEqual(pow(regionLength, 2) + cast(float)regionLength, result.y);
-    assertEqual(pow(regionHeight, 2) + cast(float)regionHeight, result.z);
-    return true;
-  });
+    runtest("worldSiteRelativeTo only separated on rank 1", delegate void() {
+      vec3i[int] worldSite, worldSiteRef;
+      worldSite[1] = vec3i(2,2,2);
+      worldSite[2] = vec3i(3,4,1);
+      worldSiteRef[1] = vec3i(1,1,1);
+      worldSiteRef[2] = vec3i(3,4,1);
+      vec3f result = CoordCalculator.worldSiteRelativeTo(worldSite, worldSiteRef);
+      assertEqual(cast(float)regionWidth, result.x);
+      assertEqual(cast(float)regionLength, result.y);
+      assertEqual(cast(float)regionHeight, result.z);
+    });
 
-  runtest("worldSiteRelativeTo; one has no rank 2", delegate bool() {
-    vec3i[int] worldSite, worldSiteRef;
-    worldSite[1] = vec3i(2,2,2);
-    worldSiteRef[1] = vec3i(1,1,1);
-    worldSiteRef[2] = vec3i(2,3,0);
-    vec3f result = CoordCalculator.worldSiteRelativeTo(worldSite, worldSiteRef);
-    assertEqual(2*pow(regionWidth, 2) + cast(float)regionWidth, result.x);
-    assertEqual(pow(regionLength, 2) + cast(float)regionLength, result.y);
-    assertEqual(2*pow(regionHeight, 2) + cast(float)regionHeight, result.z);
-    return true;
+    runtest("worldSiteRelativeTo separated by rank 1 and rank 2", delegate void() {
+      vec3i[int] worldSite, worldSiteRef;
+      worldSite[1] = vec3i(2,2,2);
+      worldSite[2] = vec3i(3,4,1);
+      worldSiteRef[1] = vec3i(1,1,1);
+      worldSiteRef[2] = vec3i(2,3,0);
+      vec3f result = CoordCalculator.worldSiteRelativeTo(worldSite, worldSiteRef);
+      assertEqual(pow(regionWidth, 2) + cast(float)regionWidth, result.x);
+      assertEqual(pow(regionLength, 2) + cast(float)regionLength, result.y);
+      assertEqual(pow(regionHeight, 2) + cast(float)regionHeight, result.z);
+    });
+
+    runtest("worldSiteRelativeTo; one has no rank 2", delegate void() {
+      vec3i[int] worldSite, worldSiteRef;
+      worldSite[1] = vec3i(2,2,2);
+      worldSiteRef[1] = vec3i(1,1,1);
+      worldSiteRef[2] = vec3i(2,3,0); // d = cx - 2, xy - 3, cz - 0
+      vec3f result = CoordCalculator.worldSiteRelativeTo(worldSite, worldSiteRef);
+      assertEqual((regionCenter.x - 2)*pow(regionWidth, 2) + cast(float)regionWidth, result.x);
+      assertEqual((regionCenter.y - 3)*pow(regionLength, 2) + cast(float)regionLength, result.y);
+      assertEqual((regionCenter.z)*pow(regionHeight, 2) + cast(float)regionHeight, result.z);
+    });
+    
   });
 }

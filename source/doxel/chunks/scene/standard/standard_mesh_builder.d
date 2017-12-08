@@ -35,7 +35,7 @@ class StandardMeshBuilder : IChunkMeshBuilder!VertexPNT
     foreach(chunk; chunks)
     {
       vec3f offset = chunk.getPositionRelativeTo(originChunk);
-      updateMeshData(chunk, offset, vertices, indices);
+      if(chunk.hasAnyVisisbleBlocks) updateMeshData(chunk, offset, vertices, indices);
     }
     return Mesh!VertexPNT(vertices, indices);
   }
@@ -49,7 +49,7 @@ class StandardMeshBuilder : IChunkMeshBuilder!VertexPNT
 
     foreach(int i, block; chunk.blocks)
     {
-      if(block == Block.EMPTY) continue;
+      if(block == Block.EMPTY || block == Block.PULP) continue;
       vec3i site = SiteCalculator.siteIndexToSite(i);
       foreach(sd; allSides) // sd is short for SideDetails
       {
@@ -59,7 +59,7 @@ class StandardMeshBuilder : IChunkMeshBuilder!VertexPNT
         if(withinBounds) adjBlock = chunk.getBlock(adjSite.x, adjSite.y, adjSite.z);
         else
         {
-          Chunk adjChunk = world.getAdjacentChunk(chunk, sd);
+          IChunk adjChunk = world.getAdjacentChunk(chunk, sd);
           if(adjChunk !is null)
           {
             adjSite = SiteCalculator.siteModulo(adjSite);
