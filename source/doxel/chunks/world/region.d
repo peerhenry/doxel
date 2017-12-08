@@ -1,10 +1,9 @@
 import gfm.math;
-
-import chunk, iregion, baseregion, iregioncontainer;
+import chunk, iregion, baseregion, iregioncontainer, worldsettings;
 
 class Region: BaseRegion, IRegionContainer
 {
-  IRegion[256] regions;
+  IRegion[regionCount] regions;
 
   this(IRegionContainer container, vec3i site)
   {
@@ -13,10 +12,11 @@ class Region: BaseRegion, IRegionContainer
     this.container = container;
   }
 
-  this(IRegion subRegion)
+  // dangerous constructor: client doesn't know if the parameter will be a subregion or a container
+  private this(IRegion subRegion)
   {
     assert(subRegion.getRank() >= 1);
-    super(subRegion.getRank()+1, vec3i(4,4,2));
+    super(subRegion.getRank()+1, regionCenter);
     regions[subRegion.getSiteIndex()] = subRegion;
     subRegion.setContainer(this);
   }
@@ -24,12 +24,17 @@ class Region: BaseRegion, IRegionContainer
   this(int rank)
   {
     assert(rank > 1);
-    super(rank, vec3i(4,4,2));
+    super(rank, regionCenter);
+  }
+
+  static Region createContainerFor(IRegion subRegion)
+  {
+    return new Region(subRegion);
   }
 
   IRegion getRegion(vec3i site)
   {
-    int index = site.x + 8*site.y + 64*site.z;
+    int index = site.x + regionSize.x*site.y + regionSize.x*regionSize.y*site.z;
     return regions[index];
   }
 
@@ -46,7 +51,7 @@ class Region: BaseRegion, IRegionContainer
   /// Creates a region if there is none at given site
   IRegion getCreateRegion(vec3i site)
   {
-    int index = site.x + 8*site.y + 64*site.z;
+    int index = site.x + regionSize.x*site.y + regionSize.x*regionSize.y*site.z;
     IRegion reg = regions[index];
     if(reg is null)
     {

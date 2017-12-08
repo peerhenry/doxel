@@ -1,17 +1,19 @@
 import gfm.math;
-
-import chunk, iregion, iregioncontainer;
+import chunk, iregion, iregioncontainer, sitecalculator;
 
 abstract class BaseRegion: IRegion
 {
   IRegionContainer container;
   immutable int rank;
   immutable vec3i site;
+  immutable int siteIndex;
 
   this(int rank, vec3i site)
   {
     this.rank = rank;
     this.site = site;
+    assert(calculator.withinBounds(site));
+    siteIndex = calculator.siteToIndex(site);
   }
 
   int getRank()
@@ -38,6 +40,6 @@ abstract class BaseRegion: IRegion
 
   int getSiteIndex()
   {
-    return site.x + 8*site.y + 64*site.z;
+    return siteIndex;
   }
 }

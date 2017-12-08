@@ -1,12 +1,11 @@
 import std.random, std.math;
 import gfm.math;
 import engine;
-import world_surface_chunk_generator, limiter, world, chunkstage, perlin, heightmap;
+import world_surface_chunk_generator, limiter, world, chunkstage, perlin, height_generator;
 class ChunkStageWorldGenerator
 {
   private Camera cam;
   private World world;
-  private ChunkStage chunkStage;
   private WorldSurfaceChunkGenerator generator;
   private Limiter chunkLimiter;
 
@@ -16,11 +15,10 @@ class ChunkStageWorldGenerator
   private int genSiteIndex;
   private int genSiteCounter;
 
-  this(Camera cam, World world, ChunkStage chunkStage, Limiter chunkLimiter)
+  this(Camera cam, World world, Limiter chunkLimiter)
   {
     this.cam = cam;
     this.world = world;
-    this.chunkStage = chunkStage;
     this.chunkLimiter = chunkLimiter;
     setWorldGenerator();
   }
@@ -32,15 +30,15 @@ class ChunkStageWorldGenerator
 
     int cellSize = 128;  // 128
     int depthRange = 64; // 64
-    HeightMap heightMap = new HeightMap(perlin, cellSize, depthRange); // noise, cell size, range
-    this.generator = new WorldSurfaceChunkGenerator(world, heightMap);
+    HeightGenerator heightGenerator = new HeightGenerator(perlin, cellSize, depthRange); // noise, cell size, range
+    this.generator = new WorldSurfaceChunkGenerator(world, heightGenerator);
   }
 
-  void update(double dt_ms)
+  void update(ChunkStage chunkStage)
   {
     chunkLimiter.reset();
     setupGenerationSites();
-    createStageObjects();
+    createStageObjects(chunkStage);
   }
 
   void markAsVisited(vec2i centerRel_ij)
@@ -102,7 +100,7 @@ class ChunkStageWorldGenerator
   bool newSpiral;
   import std.stdio;
 
-  void createStageObjects()
+  void createStageObjects(ChunkStage chunkStage)
   {
     int columsPerObject = 4;
     if(genSiteCounter > 100) columsPerObject = 8;

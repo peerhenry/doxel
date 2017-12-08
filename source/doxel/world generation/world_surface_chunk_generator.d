@@ -1,16 +1,16 @@
 import std.random;
 import gfm.math;
-import heightmap, doxel_world, doxel_stage;
+import height_generator, doxel_world, doxel_stage;
 
 class WorldSurfaceChunkGenerator
 {
-  HeightMap heightMap;
-  World world;
+  private HeightGenerator heightGenerator;
+  private World world;
 
-  this(World world, HeightMap heightMap)
+  this(World world, HeightGenerator heightGenerator)
   {
     this.world = world;
-    this.heightMap = heightMap;
+    this.heightGenerator = heightGenerator;
   }
 
   int hOffset = -10;
@@ -28,8 +28,7 @@ class WorldSurfaceChunkGenerator
       {
         int block_i = (centerRel_ij.x)*8 + ii;
         int block_j = (centerRel_ij.y)*8 + jj;
-        int h = heightMap.getHeight(block_i, block_j) + hOffset;
-        //int h = heightMap.getMultiHeight(block_i, block_j) + hOffset;
+        int h = heightGenerator.getHeight(block_i, block_j) + hOffset;
         world.setBlock(block_i, block_j, h, h<hOffset ? Block.SAND : Block.GRASS);
         world.setBlockColumn(block_i, block_j, h-1, 2, Block.DIRT);
         world.setBlockColumn(block_i, block_j, h-3, 2, Block.STONE);

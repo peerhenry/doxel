@@ -1,7 +1,7 @@
 import std.math;
 import gfm.math, gfm.opengl;
 import engine;
-import doxel_world, doxel_scene, i_chunk_scene_object_factory;
+import doxel_world, doxel_scene, i_chunk_scene_object_factory, worldsettings;
 
 class ChunkSceneObjectFactory: IChunkSceneObjectFactory
 {
@@ -30,9 +30,9 @@ class ChunkSceneObjectFactory: IChunkSceneObjectFactory
     foreach(chunk; chunksDuplicate)
     {
       vec3f nextPos = chunk.getPosition();
-      if(nextPos.x+8 > max.x) max.x = nextPos.x+8;
-      if(nextPos.y+8 > max.y) max.y = nextPos.y+8;
-      if(nextPos.z+4 > max.z) max.z = nextPos.z+4;
+      if(nextPos.x + regionWidth > max.x) max.x = nextPos.x + regionWidth;
+      if(nextPos.y + regionLength > max.y) max.y = nextPos.y + regionLength;
+      if(nextPos.z + regionHeight > max.z) max.z = nextPos.z + regionHeight;
       if(nextPos.x < min.x) min.x = nextPos.x;
       if(nextPos.y < min.y) min.y = nextPos.y;
       if(nextPos.z < min.z)

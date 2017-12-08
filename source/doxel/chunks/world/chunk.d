@@ -5,13 +5,14 @@ import doxel_world;
 class Chunk: BaseRegion
 {
   private World world;
-  Block[256] blocks;
+  Block[regionCount] blocks;
   private vec3i[int] worldSite;
 
   this(World world, IRegionContainer container, vec3i site)
   {
     assert(world !is null);
     assert(container !is null);
+    assert(container.getRank() == 2);
     super(1, site);
     this.world = world;
     this.container = container;
@@ -24,7 +25,7 @@ class Chunk: BaseRegion
     assert(worldSite == null);
     vec3i[int] newWorldSite;
     newWorldSite[1] = site;
-    auto nextContainer = container;
+    auto nextContainer = this.container;
     while(nextContainer !is null)
     {
       newWorldSite[nextContainer.getRank()] = nextContainer.getSite();
@@ -36,13 +37,13 @@ class Chunk: BaseRegion
   /// Beware, the coordinates must be in bounds: 0<=i<8, 0<=j<8, 0<=k<4
   Block getBlock(int i, int j, int k)
   {
-    int index = i + 8*j + 64*k;
+    int index = calculator.siteToIndex(i,j,k);
     return blocks[index];
   }
-  import std.stdio;
+
   void setBlock(int i, int j, int k, Block block)
   {
-    int index = i + 8*j + 64*k;
+    int index = calculator.siteToIndex(i,j,k);
     blocks[index] = block;
   }
 
@@ -87,7 +88,7 @@ unittest
   import testrunner;
   import sides;
 
-  runtest("Chunk position relative to itself is zero", delegate bool() {
+  runtest("Chunk.d: Chunk position relative to itself is zero", delegate bool() {
     // arrange
     World world = new World();
     Chunk chunk = new Chunk(world, world.topRegion, vec3i(1,1,1));
@@ -100,7 +101,7 @@ unittest
     return true;
   });
 
-  runtest("Chunk position relative to ds=(1,1,1) will return (8,8,4)", delegate bool() {
+  runtest("Chunk.d: Chunk position relative to ds=(1,1,1) will return (8,8,4)", delegate bool() {
     // arrange
     World world = new World();
     Chunk chunk = new Chunk(world, world.topRegion, vec3i(1,1,1));
@@ -114,7 +115,35 @@ unittest
     return true;
   });
 
-  runtest("Chunk position relative to adjacent chunk in other region", delegate bool() {
+  runtest("Chunk.d: Chunk constructor gets assigned container", delegate bool(){
+    // arrange
+    World world = new World();
+    auto reg1 = world.getCreateAdjacentRegion(world.topRegion, BottomDetails);
+    IRegionContainer reg = cast(IRegionContainer)world.getCreateAdjacentRegion(reg1, BottomDetails);
+    Chunk chunk = new Chunk(world, reg, vec3i(2,2,1));
+    // act
+    IRegionContainer result = chunk.getContainer();
+    // assert
+    assertEqual(reg, result);
+    return true;
+  });
+
+  runtest("Chunk.d: chunk.getWorldSite() or two regions down", delegate bool(){
+    // arrange
+    World world = new World();
+    auto reg1 = world.getCreateAdjacentRegion(world.topRegion, BottomDetails);
+    IRegionContainer reg = cast(IRegionContainer)world.getCreateAdjacentRegion(reg1, BottomDetails);
+    Chunk chunk = new Chunk(world, reg, vec3i(2,2,1));
+    // act
+    vec3i[int] result = chunk.getWorldSite();
+    // assert
+    assert((2 in result) !is null);
+    assertEqual(vec3i(2,2,1), result[1]);
+    assertEqual(vec3i(4,4,0), result[2]);
+    return true;
+  });
+
+  runtest("Chunk.d: Chunk position relative to adjacent chunk in other region", delegate bool() {
     // arrange
     World world = new World();
     Chunk chunk = new Chunk(world, world.topRegion, vec3i(0,0,0));
@@ -128,20 +157,33 @@ unittest
     return true;
   });
 
-  runtest("Chunk position relative chunk, two regions down", delegate bool() {
+  runtest("Chunk.d: Chunk position relative chunk, two regions down", delegate bool() {
     // arrange
     World world = new World();
-    auto reg1 = world.getCreateAdjacentRegion(world.topRegion, BottomDetails);
-    IRegionContainer reg2 = cast(IRegionContainer)world.getCreateAdjacentRegion(reg1, BottomDetails);
-
-    Chunk chunk = new Chunk(world, world.topRegion, vec3i(2,2,3));
+    auto reg1 = world.topRegion;
+    auto regt = world.getCreateAdjacentRegion(world.topRegion, BottomDetails);
+    IRegionContainer reg2 = cast(IRegionContainer)world.getCreateAdjacentRegion(regt, BottomDetails);
+    Chunk chunk = new Chunk(world, reg1, vec3i(2,2,3));
     Chunk chunk2 = new Chunk(world, reg2, vec3i(2,2,1));
     // act
     vec3f d = chunk.getPositionRelativeTo(chunk2);
     // assert
+    assertEqual(0, d.x);
+    assertEqual(0, d.y);
+    assertEqual(6*regionHeight + regionHeight*regionHeight, d.z);//6*4 + 16
+    return true;
+  });
+
+  runtest("Chunk.d: identical to two regions down, but with world site", delegate bool() {
+    // arrange
+    World world = new World();
+    Chunk chunk = new Chunk(world, world.topRegion, vec3i(2,2,3));
+    // act
+    vec3f d = chunk.getPositionRelativeTo([1: vec3i(2,2,1), 2: vec3i(4,4,0)]);
+    // assert
     assert(d.x == 0);
     assert(d.y == 0);
-    assert(d.z == 6*4 + 16);
+    assertEqual(6*regionHeight + regionHeight*regionHeight, d.z);//6*4 + 16
     return true;
   });
 }

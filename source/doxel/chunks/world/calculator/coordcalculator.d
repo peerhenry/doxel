@@ -1,5 +1,6 @@
 import std.math;
 import gfm.math;
+import worldsettings;
 class CoordCalculator
 {
   static:
@@ -13,11 +14,11 @@ class CoordCalculator
     {
       RefSiteHasNext = (nextRank in worldSiteRef) !is null;
       thisSiteHasNext = (nextRank in worldSite) !is null;
-      vec3i nextRefSite = RefSiteHasNext ? worldSiteRef[nextRank] : vec3i(4,4,2);
-      vec3i nextSite = thisSiteHasNext ? worldSite[nextRank] : vec3i(4,4,2);
-      relPos.x += (nextSite.x - nextRefSite.x)*pow(8, nextRank);
-      relPos.y += (nextSite.y - nextRefSite.y)*pow(8, nextRank);
-      relPos.z += (nextSite.z - nextRefSite.z)*pow(4, nextRank);
+      vec3i nextRefSite = RefSiteHasNext ? worldSiteRef[nextRank] : regionCenter;
+      vec3i nextSite = thisSiteHasNext ? worldSite[nextRank] : regionCenter;
+      relPos.x += (nextSite.x - nextRefSite.x)*pow(regionWidth, nextRank);
+      relPos.y += (nextSite.y - nextRefSite.y)*pow(regionLength, nextRank);
+      relPos.z += (nextSite.z - nextRefSite.z)*pow(regionHeight, nextRank);
       nextRank++;
     }
     return relPos;
@@ -35,9 +36,9 @@ unittest
     worldSiteRef[1] = vec3i(1,1,1);
     worldSiteRef[2] = vec3i(3,4,1);
     vec3f result = CoordCalculator.worldSiteRelativeTo(worldSite, worldSiteRef);
-    assertEqual(8.0, result.x);
-    assertEqual(8.0, result.y);
-    assertEqual(4.0, result.z);
+    assertEqual(cast(float)regionWidth, result.x);
+    assertEqual(cast(float)regionLength, result.y);
+    assertEqual(cast(float)regionHeight, result.z);
     return true;
   });
 
@@ -48,9 +49,9 @@ unittest
     worldSiteRef[1] = vec3i(1,1,1);
     worldSiteRef[2] = vec3i(2,3,0);
     vec3f result = CoordCalculator.worldSiteRelativeTo(worldSite, worldSiteRef);
-    assertEqual(64+8.0, result.x);
-    assertEqual(64+8.0, result.y);
-    assertEqual(16+4.0, result.z);
+    assertEqual(pow(regionWidth, 2) + cast(float)regionWidth, result.x);
+    assertEqual(pow(regionLength, 2) + cast(float)regionLength, result.y);
+    assertEqual(pow(regionHeight, 2) + cast(float)regionHeight, result.z);
     return true;
   });
 
@@ -60,9 +61,9 @@ unittest
     worldSiteRef[1] = vec3i(1,1,1);
     worldSiteRef[2] = vec3i(2,3,0);
     vec3f result = CoordCalculator.worldSiteRelativeTo(worldSite, worldSiteRef);
-    assertEqual(128+8.0, result.x);
-    assertEqual(64+8.0, result.y);
-    assertEqual(32+4.0, result.z);
+    assertEqual(2*pow(regionWidth, 2) + cast(float)regionWidth, result.x);
+    assertEqual(pow(regionLength, 2) + cast(float)regionLength, result.y);
+    assertEqual(2*pow(regionHeight, 2) + cast(float)regionHeight, result.z);
     return true;
   });
 }

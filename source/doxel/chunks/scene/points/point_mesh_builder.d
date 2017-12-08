@@ -35,11 +35,11 @@ class PointMeshBuilder : IChunkMeshBuilder!VertexPC
     {
       bool shouldAddBlock = false;
       if(block == Block.EMPTY) continue;
-      vec3i site = SiteCalculator.siteIndexToSite(i);
+      vec3i site = calculator.siteIndexToSite(i);
       foreach(sd; allSides) // sd is short for SideDetails
       {
         vec3i adjSite = site + cast(vec3i)sd.normal;
-        bool withinBounds = adjSite.x >= 0 && adjSite.x < 8 && adjSite.y >= 0 && adjSite.y < 8 && adjSite.z >= 0 && adjSite.z < 4;
+        bool withinBounds = !calculator.isOutOfBounds(adjSite);
         Block adjBlock = Block.EMPTY;
         if(withinBounds) adjBlock = chunk.getBlock(adjSite.x, adjSite.y, adjSite.z);
         else
@@ -47,7 +47,7 @@ class PointMeshBuilder : IChunkMeshBuilder!VertexPC
           Chunk adjChunk = world.getAdjacentChunk(chunk, sd);
           if(adjChunk !is null)
           {
-            adjSite = SiteCalculator.siteModulo(adjSite);
+            adjSite = calculator.siteModulo(adjSite);
             adjBlock = adjChunk.getBlock(adjSite.x, adjSite.y, adjSite.z);
           }
         }

@@ -1,6 +1,6 @@
 import gfm.math;
 import engine;
-import doxel_scene, chunk, limiter;
+import doxel_scene, chunk, worldsettings, limiter;
 struct Zone
 {
   float loadRange;
@@ -60,9 +60,9 @@ class ChunkStageObject: Updatable
     foreach(chunk; chunks)
     {
       vec3f nextPos = chunk.getPosition();
-      if(nextPos.x+8 > max.x) max.x = nextPos.x+8;
-      if(nextPos.y+8 > max.y) max.y = nextPos.y+8;
-      if(nextPos.z+4 > max.z) max.z = nextPos.z+4;
+      if(nextPos.x+regionWidth > max.x) max.x = nextPos.x+regionWidth;
+      if(nextPos.y+regionLength > max.y) max.y = nextPos.y+regionLength;
+      if(nextPos.z+regionHeight > max.z) max.z = nextPos.z+regionHeight;
       if(nextPos.x < min.x) min.x = nextPos.x;
       if(nextPos.y < min.y) min.y = nextPos.y;
       if(nextPos.z < min.z) min.z = nextPos.z;

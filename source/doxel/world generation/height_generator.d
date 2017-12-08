@@ -1,7 +1,7 @@
 import std.math;
 import inoise;
 
-class HeightMap
+class HeightGenerator
 {
   private INoise generator;
   private int cellSize;

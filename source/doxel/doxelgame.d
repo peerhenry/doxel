@@ -19,7 +19,6 @@ class DoxelGame : Game
   Skybox skybox;
   ChunkScene chunkSceneStandard;
   ChunkScene chunkScenePoints;
-  ChunkStageWorldGenerator generator;
 
   SDLTTF ttf;
   SDLFont font;
@@ -38,7 +37,7 @@ class DoxelGame : Game
     this.player = player;
     camera.setPosition(vec3f(0,0,10));
 
-    World world = new World();
+    world = new World();
 
     // create scenes
     skybox = new Skybox(gl, camera);
@@ -79,12 +78,11 @@ class DoxelGame : Game
       2: Zone(tLoadRange, 1.1*tLoadRange, chunkSceneStandard)
     ];
 
-    Limiter modelLimiter = new Limiter(5); // limits the number of models created
-    IChunkStageObjectFactory chunkStageObjectFactory = new ChunkStageObjectFactory(camera, zones, modelLimiter);
-    chunkStage = new ChunkStage(chunkStageObjectFactory, modelLimiter);
-
     Limiter chunkLimiter = new Limiter(40); // limits the number of chunk columns checked
-    generator = new ChunkStageWorldGenerator(camera, world, chunkStage, chunkLimiter);
+    Limiter modelLimiter = new Limiter(5); // limits the number of models created
+    ChunkStageWorldGenerator generator = new ChunkStageWorldGenerator(camera, world, chunkLimiter);
+    IChunkStageObjectFactory chunkStageObjectFactory = new ChunkStageObjectFactory(camera, zones, modelLimiter);
+    chunkStage = new ChunkStage(chunkStageObjectFactory, modelLimiter, generator);
   }
 
   ~this()
@@ -122,7 +120,6 @@ class DoxelGame : Game
     input.update();
     camera.update(dt_ms);
     player.update(dt_ms);
-    generator.update(dt_ms);
     chunkStage.update(dt_ms);
   }
   

@@ -46,8 +46,9 @@ class ChunkStageObjectFactory: IChunkStageObjectFactory
 unittest
 {
   import testrunner;
-  runTest("Invalid load ranges are rejected in ChunkStageObjectFactory", delegate bool(){
+  runtest("Invalid load ranges are rejected in ChunkStageObjectFactory", delegate bool(){
     // arrange
+    import core.exception;
     Zone[int] zones = [1: Zone(1,2,null), 2: Zone(1.5,4,null)];
     // act
     bool pass = false;

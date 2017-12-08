@@ -5,17 +5,25 @@ import engine;
 import doxelgame, inputhandler, player;
 
 static bool toRun = true;
-unittest{ toRun=false; }
+unittest{
+	toRun=false; 
+}
 
 void main()
 {
 	if(toRun)run();
+	else{
+		import testrunner;
+		writeln("");
+		failCount == 0? writeln("Test report: All test passed.") :  writeln("Test report: ", failCount, " tests failed.");
+		writeln("");
+	}
 }
 
 void run()
 {
 	import core.memory;
-	GC.disable();
+	//GC.disable();
 	
 	int width = 1920;
 	int height = 1080;

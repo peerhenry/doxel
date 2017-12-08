@@ -54,7 +54,7 @@ class StandardMeshBuilder : IChunkMeshBuilder!VertexPNT
       foreach(sd; allSides) // sd is short for SideDetails
       {
         vec3i adjSite = site + cast(vec3i)sd.normal;
-        bool withinBounds = adjSite.x >= 0 && adjSite.x < 8 && adjSite.y >= 0 && adjSite.y < 8 && adjSite.z >= 0 && adjSite.z < 4;
+        bool withinBounds = !calculator.isOutOfBounds(adjSite);
         Block adjBlock = Block.EMPTY;
         if(withinBounds) adjBlock = chunk.getBlock(adjSite.x, adjSite.y, adjSite.z);
         else

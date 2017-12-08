@@ -1,6 +1,6 @@
 import std.math, std.array, std.stdio, std.format;
 import gfm.math;
-import iregion, iregioncontainer, chunk, region, sides, blocks, sitecalculator;
+import iregion, iregioncontainer, chunk, region, sides, blocks, sitecalculator, worldsettings;
 
 alias Calc = SiteCalculator;
 
@@ -25,7 +25,7 @@ class World
   {
     _topRegion = new Region(2);
     newChunks = appender!(Chunk[])();
-    worldSiteOrigin[1] = vec3i(4,4,2);
+    worldSiteOrigin[1] = regionCenter;
   }
 
   Chunk[] getNewChunks()
@@ -55,10 +55,10 @@ class World
   void setBlock(int i, int j, int k, Block block)
   {
     //writeln("world.setBlock... ", i, j, k, " ", block);
-    vec3i chunkSite = vec3i(
-      4 + cast(int)floor((cast(float)i)/8),
-      4 + cast(int)floor((cast(float)j)/8),
-      2 + cast(int)floor((cast(float)k)/4)
+    vec3i chunkSite = regionCenter + vec3i(
+      cast(int)floor((cast(float)i)/regionSize.x),
+      cast(int)floor((cast(float)j)/regionSize.y),
+      cast(int)floor((cast(float)k)/regionSize.z)
     );
     //writeln("Now calling getCreateChunk... ");
     Chunk chunk = getCreateChunk(chunkSite);
@@ -76,7 +76,7 @@ class World
 
     while(maxRank >= this.topRegion.getRank()) // the topregion must be 1 rank above max rank in worldsite.
     {
-      _topRegion = new Region(this.topRegion);
+      _topRegion = Region.createContainerFor(this.topRegion);
     }
 
     IRegionContainer container = this.topRegion;
@@ -85,7 +85,7 @@ class World
     {
       if(container.getRank() > maxRank+1)
       {
-        container = cast(IRegionContainer) container.getCreateRegion(vec3i(4,4,2));
+        container = cast(IRegionContainer) container.getCreateRegion(regionCenter);
       }
       else
       {
@@ -150,7 +150,7 @@ class World
     IRegionContainer container;
     if(region is this.topRegion)
     {
-      container = new Region(region);
+      container = Region.createContainerFor(region);
       _topRegion = container;
     }
     else
@@ -177,4 +177,14 @@ class World
       return container.getCreateRegion(adjSite);
     }
   }
+}
+
+unittest{
+  import testrunner;
+  runtest("Chunk center is half chunk size", delegate bool(){
+    assert(regionCenter.x == regionSize.x/2);
+    assert(regionCenter.y == regionSize.y/2);
+    assert(regionCenter.z == regionSize.z/2);
+    return true;
+  });
 }

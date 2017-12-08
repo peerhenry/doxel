@@ -7,6 +7,7 @@ public import blocks;
 public import chunk;
 public import region;
 public import world;
+public import worldsettings;
 
 public import sitecalculator;
 public import baseregion;

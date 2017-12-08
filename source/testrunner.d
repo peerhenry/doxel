@@ -1,5 +1,7 @@
 import std.stdio, core.exception;
 
+static int failCount = 0;
+
 //static void runtest(string name, void function() @system function() nothrow @nogc @safe test)
 void runtest(string name, bool delegate() test)
 {
@@ -10,11 +12,17 @@ void runtest(string name, bool delegate() test)
   }
   catch(AssertError error)
   {
-    //writeln(error.msg);
-    //writeln(error.info);
+    writeln(error.msg);
+    writeln(error.info);
     pass = false;
   }
-  writeln("Test: \"", name, "\" ", pass ? "passed." : "FAILED!");
+  if(!pass) failCount++;
+  writeln(pass ? "PASS: " : "FAIL: ", name);
+}
+
+void runTest(string name, bool delegate() test)
+{
+  runtest(name, test);
 }
 
 void assertEqual(T)(T expected, T result)

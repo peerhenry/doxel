@@ -1,7 +1,11 @@
 import std.math;
 import gfm.math;
-import coordcalculator;
+import coordcalculator, worldsettings;
 public alias calculator = SiteCalculator;
+
+immutable static int yOffset = regionWidth;
+immutable static int zOffset = regionWidth*regionLength;
+
 class SiteCalculator : CoordCalculator
 {
   static:
@@ -17,51 +21,74 @@ class SiteCalculator : CoordCalculator
     return maxRank;
   }
 
+  static int siteToIndex(int i, int j, int k)
+  {
+    return i + yOffset*j + zOffset*k;
+  }
+
+  static int siteToIndex(vec3i site)
+  {
+    return site.x + yOffset*site.y + zOffset*site.z;
+  }
+
   pure vec3i siteIndexToSite(int index)
   {
-    int i = index%8;
-    int k = index/64;
-    int j = (index-k*64)/8;
+    int i = index%yOffset;
+    int k = index/zOffset;
+    int j = (index-k*zOffset)/yOffset;
     return vec3i(i,j,k);
+  }
+
+  pure bool withinBounds(vec3i site)
+  {
+    return !isOutOfBounds(site);
   }
 
   /// Checks if a site is outside region bounds
   pure bool isOutOfBounds(vec3i site)
   {
     return site.x < 0 || site.y < 0 || site.z < 0
-        || site.x > 7 || site.y > 7 || site.z > 3;
+        || site.x > siteMax.x || site.y > siteMax.y || site.z > siteMax.z;
+  }
+
+  import std.array, std.conv;
+
+  // Speed-up CTFE conversions
+  private static string ctIntToString(int n) pure nothrow
+  {
+    static immutable string[16] table = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+    if (n < 10)
+        return table[n];
+    else
+        return to!string(n);
+  }
+
+  private string generateLoopCode(string formatString, int N)() pure nothrow
+  {
+    string result;
+    for (int i = 0; i < N; ++i)
+    {
+      string index = ctIntToString(i);
+      // replace all @ by indices
+      result ~= formatString.replace("@", index);
+    }
+    return result;
   }
 
   /// Calculates the effective site it will have inside a region
   pure vec3i siteModulo(vec3i site)
   {
     vec3i newSite = site;
-    newSite.x = newSite.x % 8;
-    if(newSite.x < 0) newSite.x += 8;
-    newSite.y = newSite.y % 8;
-    if(newSite.y < 0) newSite.y += 8;
-    newSite.z = newSite.z % 4;
-    if(newSite.z < 0) newSite.z += 4;
+    mixin(generateLoopCode!("newSite[@] = newSite[@] % regionSize[@]; if(newSite[@] < 0) newSite[@] += regionSize[@];", 3));
+
+    /*newSite.x = newSite.x % regionSize.x;
+    if(newSite.x < 0) newSite.x += regionSize.x;
+    newSite.y = newSite.y % regionSize.y;
+    if(newSite.y < 0) newSite.y += regionSize.y;
+    newSite.z = newSite.z % regionSize.z;
+    if(newSite.z < 0) newSite.z += regionSize.z;*/
     return newSite;
   }
-
-  // I don't want to allow any absolute calculations, only relative...
-  /// Convert world site to global chunk site
-  /*pure vec3i toGlobalSite(vec3i[int] worldSite)
-  {
-    int rank = 1;
-    vec3i* nextSite = rank in worldSite;
-    vec3i globalSite;
-    while(nextSite !is null)
-    {
-      rank++;
-      globalSite.x += ((*nextSite).x - 4)*pow(8, rank);
-      globalSite.y += ((*nextSite).y - 4)*pow(8, rank);
-      globalSite.z += ((*nextSite).z - 2)*pow(4, rank);
-      nextSite = rank in worldSite;
-    }
-    return globalSite;
-  }*/
 
   /// Converts a global chunk site to a world site
   pure vec3i[int] toWorldSite(vec3i site)
@@ -74,12 +101,12 @@ class SiteCalculator : CoordCalculator
   pure private void rec(ref vec3i[int] worldSite, int rank, vec3i site)
   {
     worldSite[rank] = siteModulo(site);
-    if(site.x > 7 || site.y > 7 || site.z > 3 || site.x < 0 || site.y < 0 || site.z < 0)
+    if(site.x > siteMax.x || site.y > siteMax.y || site.z > siteMax.z || site.x < 0 || site.y < 0 || site.z < 0)
     {
-      vec3i nextSite = vec3i(
-        4 + cast(int)floor((cast(float)site.x)/8),
-        4 + cast(int)floor((cast(float)site.y)/8),
-        2 + cast(int)floor((cast(float)site.z)/4)
+      vec3i nextSite = regionCenter + vec3i(
+        cast(int)floor((cast(float)site.x)/regionWidth),
+        cast(int)floor((cast(float)site.y)/regionLength),
+        cast(int)floor((cast(float)site.z)/regionHeight)
       );
       rec(worldSite, rank+1, nextSite);
     }
