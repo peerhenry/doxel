@@ -1,4 +1,4 @@
-import std.random;
+import std.random, std.math:floor;
 import gfm.math;
 import doxel_world, height_provider;
 

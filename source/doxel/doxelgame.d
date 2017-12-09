@@ -73,19 +73,19 @@ class DoxelGame : Game
 
   void setupWaterScene()
   {
-    SceneProgramWater sceneProgramWater = new SceneProgramWater(gl);
-    UniformSetter setter3 = new PvmSetter(sceneProgramWater.program, camera, "PVM");
+    SceneProgramWater sceneProgramWater = new SceneProgramWater(gl, camera);
+    UniformSetter setter3 = new PvmModelSetter(sceneProgramWater.program, camera, "PVM", "Model");
     WaterMeshBuilder waterMeshBuilder = new WaterMeshBuilder(world);
     IChunkModelFactory waterModelFac = new WaterChunkModelFactory(gl, sceneProgramWater.vertexSpec, waterMeshBuilder);
-    IChunkSceneObjectFactory waterSceneObjectFac = new ChunkSceneObjectFactory(waterModelFac, setter3);;
+    IChunkSceneObjectFactory waterSceneObjectFac = new ChunkSceneObjectFactory(waterModelFac, setter3);
     waterScene = new ChunkScene(camera, sceneProgramWater, waterSceneObjectFac);
     waterScene.setValidator(new WaterSceneChunkValidator());
   }
 
   void setupStage()
   {
-    float pLoadRange = 160;
-    float tLoadRange = 80;
+    float pLoadRange = 180;
+    float tLoadRange = 140;
 
     Zone[int] zones = [
       1: Zone(pLoadRange, 1.1*pLoadRange, [chunkScenePoints]),

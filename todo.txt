@@ -1,8 +1,8 @@
 todo:
 
-translucent water (2 render calls for chunks containing water)
-
 == next
+refactor: make loosely coupled architecture, originating from game
+make nice water rendering (with framebuffer)
 fix pulp chunks
 read settings from config file
 first person (movement, jumping, collision detection)

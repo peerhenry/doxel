@@ -7,11 +7,11 @@ class WaterChunkModelFactory : IChunkModelFactory
   private
   {
     OpenGL gl;
-    VertexSpecification!VertexP spec;
-    IChunkMeshBuilder!VertexP meshBuilder;
+    VertexSpecification!VertexPT spec;
+    IChunkMeshBuilder!VertexPT meshBuilder;
   }
 
-  this(OpenGL gl, VertexSpecification!VertexP spec, IChunkMeshBuilder!VertexP meshBuilder)
+  this(OpenGL gl, VertexSpecification!VertexPT spec, IChunkMeshBuilder!VertexPT meshBuilder)
   {
     this.gl = gl;
     this.spec = spec;
@@ -20,21 +20,21 @@ class WaterChunkModelFactory : IChunkModelFactory
 
   Drawable createModel(Chunk chunk)
   {
-    Mesh!VertexP mesh = meshBuilder.buildChunkMesh(chunk);
+    Mesh!VertexPT mesh = meshBuilder.buildChunkMesh(chunk);
     if(mesh.vertices.length == 0)
     {
       return new DefaultDraw();
     }
-    else return new Model!VertexP(gl, spec, mesh);
+    else return new Model!VertexPT(gl, spec, mesh);
   }
 
   /// create model from multiple chunks, relative to one chunk
   Drawable createModel(Chunk[] chunks, Chunk originChunk)
   {
     assert(chunks.length > 0);
-    Mesh!VertexP mesh = meshBuilder.buildChunkMesh(chunks, originChunk);
+    Mesh!VertexPT mesh = meshBuilder.buildChunkMesh(chunks, originChunk);
     assert(mesh.vertices.length > 0);
-    Model!VertexP model = new Model!VertexP(gl, spec, mesh);
+    Model!VertexPT model = new Model!VertexPT(gl, spec, mesh);
     return model;
   }
 }

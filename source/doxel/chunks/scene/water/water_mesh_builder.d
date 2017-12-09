@@ -2,7 +2,7 @@ import gfm.math;
 import engine;
 import i_chunk_mesh_builder, doxel_world, quadbuilder_pnt, sides, block_textures;
 
-class WaterMeshBuilder : IChunkMeshBuilder!VertexP
+class WaterMeshBuilder : IChunkMeshBuilder!VertexPT
 {
   World world;
 
@@ -20,24 +20,24 @@ class WaterMeshBuilder : IChunkMeshBuilder!VertexP
 
   int counter = 0;
 
-  Mesh!VertexP buildChunkMesh(Chunk chunk)
+  Mesh!VertexPT buildChunkMesh(Chunk chunk)
   {
-    VertexP[] vertices;
+    VertexPT[] vertices;
     uint[] indices;
     updateMeshData(chunk, vec3f(0,0,0), vertices, indices);
-    return Mesh!VertexP(vertices, indices);
+    return Mesh!VertexPT(vertices, indices);
   }
 
-  Mesh!VertexP buildChunkMesh(Chunk[] chunks, Chunk originChunk)
+  Mesh!VertexPT buildChunkMesh(Chunk[] chunks, Chunk originChunk)
   {
-    VertexP[] vertices;
+    VertexPT[] vertices;
     uint[] indices;
     foreach(chunk; chunks)
     {
       vec3f offset = chunk.getPositionRelativeTo(originChunk);
       if(chunk.hasAnyVisisbleBlocks) updateMeshData(chunk, offset, vertices, indices);
     }
-    return Mesh!VertexP(vertices, indices);
+    return Mesh!VertexPT(vertices, indices);
   }
 
   private Block getAdjacentBlock(Chunk chunk, vec3i site, SideDetails sideDetails)
@@ -62,7 +62,7 @@ class WaterMeshBuilder : IChunkMeshBuilder!VertexP
     return adjBlock;
   }
 
-  private void updateMeshData(Chunk chunk, vec3f vertexOffset, ref VertexP[] vertices, ref uint[] indices)
+  private void updateMeshData(Chunk chunk, vec3f vertexOffset, ref VertexPT[] vertices, ref uint[] indices)
   {
     float heightLevel = 0;
     bool addQuad = false;
@@ -78,10 +78,10 @@ class WaterMeshBuilder : IChunkMeshBuilder!VertexP
     }
     if(!addQuad) return;
     vertices ~= [
-        VertexP(vertexOffset + vec3f(0, 0, heightLevel)) // 00
-      , VertexP(vertexOffset + vec3f(0, regionLength, heightLevel)) //0l
-      , VertexP(vertexOffset + vec3f(regionWidth, 0, heightLevel)) //w0
-      , VertexP(vertexOffset + vec3f(regionWidth, regionLength, heightLevel)) //wl
+        VertexPT(vertexOffset + vec3f(0, 0, heightLevel), vec2f(0,0)) // 00
+      , VertexPT(vertexOffset + vec3f(0, regionLength, heightLevel), vec2f(0,1)) //0l
+      , VertexPT(vertexOffset + vec3f(regionWidth, 0, heightLevel), vec2f(1,0)) //w0
+      , VertexPT(vertexOffset + vec3f(regionWidth, regionLength, heightLevel), vec2f(1,1)) //wl
     ];
     uint li = 0;
     if(indices.length > 0) li = indices[indices.length-1]+1;

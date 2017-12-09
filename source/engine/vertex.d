@@ -17,6 +17,12 @@ struct VertexPC
   vec3f color;
 }
 
+struct VertexPT
+{
+  vec3f position;
+  vec2f uv;
+}
+
 struct VertexPNT
 {
   vec3f position;

@@ -1,7 +1,7 @@
 import gfm.math;
 
-immutable static int regionWidth = 16;
-immutable static int regionLength = 16;
+immutable static int regionWidth = 8;
+immutable static int regionLength = 8;
 immutable static int regionHeight = 8;
 immutable static int regionCount = regionWidth*regionLength*regionHeight;
 immutable static vec3i regionSize = vec3i(regionWidth, regionLength, regionHeight);
