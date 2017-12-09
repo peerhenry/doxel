@@ -9,6 +9,8 @@ class Chunk: BaseRegion, IChunk
   private vec3i[int] worldSite;
   private int visibleBlockCounter;
   @property bool hasAnyVisisbleBlocks() { return visibleBlockCounter > 0; }
+  private bool _hasWater;
+  @property bool hasWater(){return _hasWater;}
 
   this(World world, IRegionContainer container, vec3i site)
   {
@@ -57,6 +59,7 @@ class Chunk: BaseRegion, IChunk
     if(isVisible(block))
     {
       if(!isVisible(oldBlock)) visibleBlockCounter++;
+      if(block == Block.WATER) _hasWater = true;
     }
     else
     {

@@ -61,3 +61,48 @@ VertexPNT[4] generateQuad(Side side, vec3f center, vec2i atlasIndex)
   }
   return output;
 }
+
+VertexP[4] generateQuadPositions(Side side, vec3f center, float size)
+{
+  VertexP[4] output;
+  final switch(side)
+  {
+    case Side.Top:
+      output[0] = VertexP(center + size*vec3f(-0.5, -0.5, 0));
+      output[1] = VertexP(center + size*vec3f(-0.5, 0.5, 0));
+      output[2] = VertexP(center + size*vec3f(0.5, -0.5, 0));
+      output[3] = VertexP(center + size*vec3f(0.5, 0.5, 0));
+      break;
+    case Side.Bottom:
+      output[0] = VertexP(center + size*vec3f(0.5, -0.5, 0));
+      output[1] = VertexP(center + size*vec3f(0.5, 0.5, 0));
+      output[2] = VertexP(center + size*vec3f(-0.5, -0.5, 0));
+      output[3] = VertexP(center + size*vec3f(-0.5, 0.5, 0));
+      break;
+    case Side.North:
+      output[0] = VertexP(center + size*vec3f(0.5, 0, -0.5));
+      output[1] = VertexP(center + size*vec3f(0.5, 0, 0.5));
+      output[2] = VertexP(center + size*vec3f(-0.5, 0, -0.5));
+      output[3] = VertexP(center + size*vec3f(-0.5, 0, 0.5));
+      break;
+    case Side.South:
+      output[0] = VertexP(center + size*vec3f(-0.5, 0, -0.5));
+      output[1] = VertexP(center + size*vec3f(-0.5, 0, 0.5));
+      output[2] = VertexP(center + size*vec3f(0.5, 0, -0.5));
+      output[3] = VertexP(center + size*vec3f(0.5, 0, 0.5));
+      break;
+    case Side.East:
+      output[0] = VertexP(center + size*vec3f(0, -0.5, -0.5));
+      output[1] = VertexP(center + size*vec3f(0, -0.5, 0.5));
+      output[2] = VertexP(center + size*vec3f(0, 0.5, -0.5));
+      output[3] = VertexP(center + size*vec3f(0, 0.5, 0.5));
+      break;
+    case Side.West:
+      output[0] = VertexP(center + size*vec3f(0, 0.5, -0.5));
+      output[1] = VertexP(center + size*vec3f(0, 0.5, 0.5));
+      output[2] = VertexP(center + size*vec3f(0, -0.5, -0.5));
+      output[3] = VertexP(center + size*vec3f(0, -0.5, 0.5));
+      break;
+  }
+  return output;
+}

@@ -7,15 +7,16 @@ struct Zone
   float unloadRange;
   float loadRangeSquared;
   float unloadRangeSquared;
-  ChunkScene scene;
-  this(float loadRange, float unloadRange, ChunkScene scene)
+  ChunkScene[] scenes;
+  
+  this(float loadRange, float unloadRange, ChunkScene[] scenes)
   {
     assert(unloadRange > loadRange);
     this.loadRange = loadRange;
     loadRangeSquared = loadRange*loadRange;
     this.unloadRange = unloadRange;
     unloadRangeSquared = unloadRange*unloadRange;
-    this.scene = scene;
+    this.scenes = scenes;
   }
 }
 
@@ -28,7 +29,7 @@ class ChunkStageObject: Updatable
     const int innerZoneIndex;
     Zone[int] zones;
     Chunk[] chunks;
-    SceneObject sceneObject;
+    SceneObject[] sceneObjects;
     vec3f min, max, center;
     Limiter modelLimiter;
     bool validToModel;
@@ -51,6 +52,7 @@ class ChunkStageObject: Updatable
     }
     innerZoneIndex = maxZone;
     calcMinMax();
+    sceneObjects = [null, null];
   }
 
   void calcMinMax()
@@ -117,9 +119,11 @@ class ChunkStageObject: Updatable
       if(boundZoneIndex > 0) removeFromScene();
       if(newZoneIndex > 0 && validToModel)
       {
-        auto scene = zones[newZoneIndex].scene;
-        sceneObject = scene.createSceneObject(chunks);
-        modelLimiter.increment();
+        foreach(i, scene; zones[newZoneIndex].scenes)
+        {
+          sceneObjects[i] = zones[newZoneIndex].scenes[i].createSceneObject(chunks);
+          modelLimiter.increment();
+        }
       }
       boundZoneIndex = newZoneIndex;
     }
@@ -140,10 +144,16 @@ class ChunkStageObject: Updatable
 
   private void removeFromScene()
   {
-    auto oldScene = zones[boundZoneIndex].scene;
-    oldScene.remove(sceneObject);
-    sceneObject.destroy;
+    foreach(i, scene; zones[boundZoneIndex].scenes)
+    {
+      auto oldScene = zones[boundZoneIndex].scenes[i];
+      if(sceneObjects[i] !is null)
+      {
+        oldScene.remove(sceneObjects[i]);
+        sceneObjects[i].destroy;
+        sceneObjects[i] = null;
+      }
+    }
     boundZoneIndex = 0;
-    sceneObject = null;
   }
 }

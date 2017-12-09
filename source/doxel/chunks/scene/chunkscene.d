@@ -2,19 +2,36 @@ import std.container;
 import gfm.opengl, gfm.math;
 import engine;
 import limiter, doxel_world, doxel_scene;
+
+interface ISceneChunkValidator
+{
+  bool areValid(Chunk[] chunks);
+}
+
+class DefaultValidator : ISceneChunkValidator
+{
+  bool areValid(Chunk[] chunks){return true;}
+}
+
 class ChunkScene
 {
   private Camera camera;
   private DList!SceneObject sceneObjects;
   private IChunkSceneObjectFactory fac;
   private ISceneProgram sceneProgram;
-  OpenGL gl;
-  this(OpenGL gl, Camera camera, ISceneProgram sceneProgram, IChunkSceneObjectFactory fac)
+  private ISceneChunkValidator validator;
+
+  this(Camera camera, ISceneProgram sceneProgram, IChunkSceneObjectFactory fac)
   {
-    this.gl = gl;
     this.camera = camera;
     this.sceneProgram = sceneProgram;
     this.fac = fac;
+    validator = new DefaultValidator();
+  }
+
+  void setValidator(ISceneChunkValidator validator)
+  {
+    this.validator = validator;
   }
 
   ~this()
@@ -38,6 +55,7 @@ class ChunkScene
   /// Creates a scene object from chunks
   SceneObject createSceneObject(Chunk[] chunks)
   {
+    if(!validator.areValid(chunks)) return null;
     SceneObject sceneObject = fac.createSceneObject(chunks);
     sceneObjects.insert(sceneObject);
     return sceneObject;
@@ -46,9 +64,7 @@ class ChunkScene
   void draw()
   {
     sceneProgram.program.use();
-    gl.runtimeCheck();//DEBUG
     sceneProgram.setUniforms();
-    gl.runtimeCheck();//DEBUG
     foreach(obj; sceneObjects)
     {
       vec3f[8] boxCorners = obj.getBBCorners();
@@ -58,6 +74,5 @@ class ChunkScene
       }
     }
     sceneProgram.program.unuse();
-    gl.runtimeCheck();//DEBUG
   }
 }

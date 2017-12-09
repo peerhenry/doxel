@@ -20,6 +20,6 @@ class Limiter
 
   bool limitReached()
   {
-    return counter == limit;
+    return counter >= limit;
   }
 }

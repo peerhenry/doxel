@@ -13,6 +13,11 @@ public import scene_program_standard;
 public import standard_mesh_builder;
 public import standard_chunk_model_factory;
 
+public import scene_program_water;
+public import water_mesh_builder;
+public import water_chunk_model_factory;
+public import water_scene_chunk_validator;
+
 public import point_mesh_builder;
 public import point_chunk_model_factory;
 public import scene_program_points;

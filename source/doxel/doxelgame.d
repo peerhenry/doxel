@@ -20,6 +20,7 @@ class DoxelGame : Game
   Skybox skybox;
   ChunkScene chunkSceneStandard;
   ChunkScene chunkScenePoints;
+  ChunkScene waterScene;
 
   SDLTTF ttf;
   SDLFont font;
@@ -43,6 +44,7 @@ class DoxelGame : Game
     // create scenes
     skybox = new Skybox(gl, camera);
 
+    setupWaterScene();
     setupStandardScene();
     setupPointScene();
     setupStage();
@@ -55,7 +57,7 @@ class DoxelGame : Game
     StandardMeshBuilder standardMeshBuilder = new StandardMeshBuilder(world);
     IChunkModelFactory standardModelFac = new StandardChunkModelFactory(gl, sceneProgram.vertexSpec, standardMeshBuilder);
     IChunkSceneObjectFactory standardSceneObjectFac = new ChunkSceneObjectFactory(standardModelFac, pvmNormalSetter);
-    chunkSceneStandard = new ChunkScene(gl, camera, sceneProgram, standardSceneObjectFac);
+    chunkSceneStandard = new ChunkScene(camera, sceneProgram, standardSceneObjectFac);
   }
 
   void setupPointScene()
@@ -66,7 +68,18 @@ class DoxelGame : Game
     PointMeshBuilder pointMeshBuilder = new PointMeshBuilder(world);
     IChunkModelFactory pointModelFac = new PointChunkModelFactory(gl, sceneProgramPoints.vertexSpec, pointMeshBuilder);
     IChunkSceneObjectFactory pointsSceneObjectFac = new ChunkSceneObjectFactory(pointModelFac, setter2);
-    chunkScenePoints = new ChunkScene(gl, camera, sceneProgramPoints, pointsSceneObjectFac);
+    chunkScenePoints = new ChunkScene(camera, sceneProgramPoints, pointsSceneObjectFac);
+  }
+
+  void setupWaterScene()
+  {
+    SceneProgramWater sceneProgramWater = new SceneProgramWater(gl);
+    UniformSetter setter3 = new PvmSetter(sceneProgramWater.program, camera, "PVM");
+    WaterMeshBuilder waterMeshBuilder = new WaterMeshBuilder(world);
+    IChunkModelFactory waterModelFac = new WaterChunkModelFactory(gl, sceneProgramWater.vertexSpec, waterMeshBuilder);
+    IChunkSceneObjectFactory waterSceneObjectFac = new ChunkSceneObjectFactory(waterModelFac, setter3);;
+    waterScene = new ChunkScene(camera, sceneProgramWater, waterSceneObjectFac);
+    waterScene.setValidator(new WaterSceneChunkValidator());
   }
 
   void setupStage()
@@ -75,8 +88,8 @@ class DoxelGame : Game
     float tLoadRange = 80;
 
     Zone[int] zones = [
-      1: Zone(pLoadRange, 1.1*pLoadRange, chunkScenePoints),
-      2: Zone(tLoadRange, 1.1*tLoadRange, chunkSceneStandard)
+      1: Zone(pLoadRange, 1.1*pLoadRange, [chunkScenePoints]),
+      2: Zone(tLoadRange, 1.1*tLoadRange, [chunkSceneStandard, waterScene])
     ];
 
     Limiter chunkLimiter = new Limiter(20); // limits the number of chunk columns checked
@@ -101,6 +114,7 @@ class DoxelGame : Game
     chunkSceneStandard.destroy;
     chunkScenePoints.destroy;
     skybox.destroy;
+    waterScene.destroy;
   }
 
   void initialize()
@@ -116,6 +130,8 @@ class DoxelGame : Game
     glFrontFace(GL_CW); // clockwise faces are front
     glClearColor(100.0/255, 149.0/255, 237.0/255, 1.0); // cornflower blue
     glPointSize(1.0);
+    glEnable(GL_BLEND); 
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   }
 
   void clickRemoveBlock()
@@ -139,5 +155,6 @@ class DoxelGame : Game
     chunkScenePoints.draw();
     glClear(GL_DEPTH_BUFFER_BIT);
     chunkSceneStandard.draw();
+    waterScene.draw();
   }
 }
