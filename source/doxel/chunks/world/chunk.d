@@ -45,11 +45,23 @@ class Chunk: BaseRegion, IChunk
     return blocks[index];
   }
 
+  private bool isVisible(Block block)
+  {
+    return !(block == Block.EMPTY || block == block.PULP);
+  }
+
   void setBlock(int i, int j, int k, Block block)
   {
-    if(block == Block.EMPTY || block == Block.PULP) visibleBlockCounter--;
-    else  visibleBlockCounter++;
     int index = calculator.siteToIndex(i,j,k);
+    Block oldBlock = blocks[index];
+    if(isVisible(block))
+    {
+      if(!isVisible(oldBlock)) visibleBlockCounter++;
+    }
+    else
+    {
+      if(isVisible(oldBlock)) visibleBlockCounter--;
+    }
     blocks[index] = block;
   }
 

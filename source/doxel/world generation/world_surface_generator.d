@@ -11,87 +11,102 @@ class WorldSurfaceGenerator
   this(World world, IHeightProvider heightProvider, int seed)
   {
     this.world = world;
-    heightProvider.setOffset(-10);
+    //heightProvider.setOffset(-10);
     this.heightProvider = heightProvider;
     this.seed = seed;
   }
-
-  int hOffset = -10;
   
   /// The parameters are site indices relative to the center chunk.
   void generateChunkColumn(vec2i centerRel_ij)
   {
-    auto random = Random(seed);
-    bool withTree = uniform(0,2, random) == 1;
-    int tree_i = 4 + uniform(-2,3, random);
-    int tree_j = 4 + uniform(-2,3, random);
-    foreach(ii; 0..regionWidth)
-    {
-      foreach(jj; 0..regionLength)
-      {
-        int block_i = (centerRel_ij.x)*regionWidth + ii;
-        int block_j = (centerRel_ij.y)*regionLength + jj;
+    int ii_min = (centerRel_ij.x)*regionWidth;
+    int ii_max = ii_min + regionWidth;
+    int jj_min = (centerRel_ij.y)*regionLength;
+    int jj_max = jj_min + regionLength;
 
-        int h = heightProvider.getHeight(block_i, block_j) + hOffset;
+    auto random = Random(42);
+    bool withTree = uniform(0,2, random) == 1;
+    int tree_i = ii_min + regionWidth/2 + uniform(-2,3, random);
+    int tree_j = jj_min + regionLength/2 + uniform(-2,3, random);
+
+    int chunkColMin = 99999999;
+    foreach(ii; ii_min..ii_max)
+    {
+      foreach(jj; jj_min..jj_max)
+      {
+        int next_h = heightProvider.getHeight(ii, jj);
+        if(next_h < chunkColMin) chunkColMin = next_h;
+      }
+    }
+    int chunkColBottom = (cast(int)floor((cast(float)chunkColMin)/regionHeight))*regionHeight;
+
+    foreach(ii; ii_min..ii_max)
+    {
+      foreach(jj; jj_min..jj_max)
+      {
+        int h = heightProvider.getHeight(ii, jj);
         int[4] h_enws = [
-          heightProvider.getHeight(block_i+1, block_j)
-          , heightProvider.getHeight(block_i, block_j+1)
-          , heightProvider.getHeight(block_i-1, block_j)
-          , heightProvider.getHeight(block_i, block_j-1)
+          heightProvider.getHeight(ii+1, jj)
+          , heightProvider.getHeight(ii, jj+1)
+          , heightProvider.getHeight(ii-1, jj)
+          , heightProvider.getHeight(ii, jj-1)
         ];
+
+        Block surface = h<1 ? Block.SAND : Block.GRASS;
 
         int adj_min = 9999999;
         foreach(adj_h; h_enws)
         {
           if(adj_h < adj_min) adj_min = adj_h;
         }
-        int h_min;
-        if(adj_min >= h)
+        int h_min; // h_min is the lowest visible block
+        if(adj_min >= h-1)
         {
           // all blocks under this one in this chunk become blob
           h_min = h;
-          world.setBlock(block_i, block_j, h, Block.GRASS);
+          world.setBlock(ii, jj, h, surface);
         }
         else
         {
-          h_min = adj_min;
-          foreach(hi; 0..h - adj_min)
+          h_min = adj_min+1;
+          foreach(hi; h_min..h+1)
           {
-            Block surface = h<hOffset ? Block.SAND : Block.GRASS;
-            Block block = hi>0 ? Block.DIRT : surface;
-            if(hi>4) block = Block.STONE;
-            world.setBlock(block_i, block_j, h - hi, block);
+            Block block = hi<h ? Block.DIRT : surface;
+            if(hi<h-4) block = Block.STONE;
+            world.setBlock(ii, jj, hi, block);
           }
         }
 
         // fill the rest of the chunk to the bottom with pulp;
-        int chunkBottom = calculator.siteCompModulo(h_min, regionHeight);
-        int ctb = h_min-chunkBottom;
-        if(h_min > chunkBottom)
+        if(h_min > chunkColBottom)
         {
-          foreach(hi; chunkBottom..h_min)
+          foreach(hi; chunkColBottom..h_min)
           {
-            world.setBlock(block_i, block_j, chunkBottom + hi, Block.PULP);
+            world.setBlock(ii, jj, hi, Block.PULP);
           }
         }
 
         // spawn trees
-        if(withTree && ii == tree_i && jj == tree_j && h > hOffset)
+        if(withTree && ii == tree_i && jj == tree_j && h > 1)
         {
-          spawnTree(block_i, block_j, h+1, uniform(3,6,random));
+          spawnTree(ii, jj, h+1, uniform(3,6,random));
           withTree = false;
         }
 
         // fill water
-        if(h < hOffset-3)
+        if(h < -1)
         {
-          foreach(nn; h..(-2+hOffset))
+          foreach(nn; (h+1)..0)
           {
-            world.setBlock(block_i, block_j, nn, Block.WATER);
+            world.setBlock(ii, jj, nn, Block.WATER);
           }
         }
       }
     }
+    // spawn a blob chunk underneath
+    int lowestChunkZ = calculator.siteCompModulo( chunkColMin, regionHeight );
+    vec3i chunkPulpSite = vec3i( centerRel_ij.x, centerRel_ij.y, lowestChunkZ-1 );
+    //world.createPulpChunk( chunkPulpSite );
   }
 
   void spawnTree(int i, int j, int k, int height)

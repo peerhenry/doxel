@@ -68,12 +68,36 @@ class World
     chunk.setBlock(blockSite.x, blockSite.y, blockSite.z, block);
   }
 
+  void createPulpChunk(vec3i site)
+  {
+    vec3i[int] worldSite = Calc.toWorldSite(site);
+    int maxRank = Calc.getMaxRank(worldSite);
+    IRegionContainer container = getCreateChunkContainer(worldSite, maxRank);
+    new ChunkPulp(this, container, worldSite[1]);
+  }
+
   Chunk getCreateChunk(vec3i site)
   {
     // dictionary with int keys and vec3i values.
     vec3i[int] worldSite = Calc.toWorldSite(site);
-    int maxRank = SiteCalculator.getMaxRank(worldSite);
+    int maxRank = Calc.getMaxRank(worldSite);
+    IRegionContainer container = getCreateChunkContainer(worldSite, maxRank);
 
+    auto chunk = container.getRegion(worldSite[1]);
+    if(chunk is null)
+    {
+      auto newChunk = new Chunk(this, container, worldSite[1]);
+      newChunks ~= newChunk;
+      return newChunk;
+    }
+    else
+    {
+      return cast(Chunk) chunk;
+    }
+  }
+
+  private IRegionContainer getCreateChunkContainer(vec3i[int] worldSite, int maxRank)
+  {
     while(maxRank >= this.topRegion.getRank()) // the topregion must be 1 rank above max rank in worldsite.
     {
       _topRegion = Region.createContainerFor(this.topRegion);
@@ -93,18 +117,7 @@ class World
         container = cast(IRegionContainer) container.getCreateRegion(regSite);
       }
     }
-
-    auto chunk = container.getRegion(worldSite[1]);
-    if(chunk is null)
-    {
-      auto newChunk = new Chunk(this, container, worldSite[1]);
-      newChunks ~= newChunk;
-      return newChunk;
-    }
-    else
-    {
-      return cast(Chunk) chunk;
-    }
+    return container;
   }
 
   IChunk getAdjacentChunk(IChunk chunk, SideDetails side)

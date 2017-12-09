@@ -1,11 +1,11 @@
 todo:
 
-first person (movement, jumping, collision detection)
-- make update a function of dt
+translucent water (2 render calls for chunks containing water)
 
 == next
+fix pulp chunks
 read settings from config file
-translucent water (2 render calls for chunks containing water)
+first person (movement, jumping, collision detection)
 shadow mapping
 calculate vectors based on a reference region, not world center (remove any world center methods)
 

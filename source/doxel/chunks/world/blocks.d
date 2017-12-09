@@ -7,6 +7,6 @@ public enum Block: byte
   , SAND
   , TRUNK
   , LEAVES
-  , WATER
   , PULP
+  , WATER
 }

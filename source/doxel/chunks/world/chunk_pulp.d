@@ -2,7 +2,7 @@ import std.math;
 import gfm.math;
 import doxel_world;
 
-class PulpChunk: BaseRegion, IChunk
+class ChunkPulp: BaseRegion, IChunk
 {
   private vec3i[int] worldSite;
 
@@ -13,6 +13,7 @@ class PulpChunk: BaseRegion, IChunk
     assert(container.getRank() == 2);
     super(1, site);
     worldSite = buildWorldSite();
+    container.addRegion(this);
   }
 
   private vec3i[int] buildWorldSite()

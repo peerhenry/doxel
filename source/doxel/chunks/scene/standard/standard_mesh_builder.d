@@ -49,7 +49,8 @@ class StandardMeshBuilder : IChunkMeshBuilder!VertexPNT
 
     foreach(int i, block; chunk.blocks)
     {
-      if(block == Block.EMPTY || block == Block.PULP) continue;
+      //if(block == Block.EMPTY || block == Block.PULP) continue;
+      if(block == Block.EMPTY) continue;
       vec3i site = SiteCalculator.siteIndexToSite(i);
       foreach(sd; allSides) // sd is short for SideDetails
       {
@@ -62,6 +63,11 @@ class StandardMeshBuilder : IChunkMeshBuilder!VertexPNT
           IChunk adjChunk = world.getAdjacentChunk(chunk, sd);
           if(adjChunk !is null)
           {
+            if(adjChunk.isPulp())
+            {
+              import std.stdio; writeln("pulp chunk detected in meshbuilder.");
+              adjBlock = Block.PULP;
+            }
             adjSite = SiteCalculator.siteModulo(adjSite);
             adjBlock = adjChunk.getBlock(adjSite.x, adjSite.y, adjSite.z);
           }
