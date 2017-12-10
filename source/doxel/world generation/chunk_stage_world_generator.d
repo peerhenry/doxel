@@ -1,7 +1,7 @@
 import std.random, std.math;
 import gfm.math;
 import engine;
-import world_surface_generator, limiter, world, chunkstage, perlin, height_generator, height_map, height_provider;
+import world_surface_generator, limiter, world, chunkstage, perlin, height_generator, height_map, height_provider, worldsettings;
 class ChunkStageWorldGenerator
 {
   private Camera cam;
@@ -43,11 +43,11 @@ class ChunkStageWorldGenerator
   void setupGenerationSites()
   {
     vec2i centerRel_ij = vec2i(
-      cast(int)floor(cam.position.x/8),
-      cast(int)floor(cam.position.y/8)
+      cast(int)floor(cam.position.x/regionWidth),
+      cast(int)floor(cam.position.y/regionHeight)
     );
 
-    if(centerRel_ij != lastCamRel_ij && centerRel_ij.squaredDistanceTo(lastCamRel_ij) > 16)
+    if(centerRel_ij != lastCamRel_ij && centerRel_ij.squaredDistanceTo(lastCamRel_ij) > regionWidth*regionWidth)
     {
       newSpiral = true;
       genSites = [centerRel_ij];
@@ -57,7 +57,7 @@ class ChunkStageWorldGenerator
       int shell = 0;
       vec2i next_ij = centerRel_ij;
       vec2i[3] dirs = [vec2i(-1,-1), vec2i(1,-1), vec2i(1,1)];
-      while(shell < 200)
+      while(shell < (200*8/regionWidth))
       {
         // go up
         next_ij = next_ij + vec2i(0,1);

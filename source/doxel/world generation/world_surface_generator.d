@@ -24,10 +24,10 @@ class WorldSurfaceGenerator
     int jj_min = (centerRel_ij.y)*regionLength;
     int jj_max = jj_min + regionLength;
 
-    auto random = Random(42);
-    bool withTree = uniform(0,2, random) == 1;
-    int tree_i = ii_min + regionWidth/2 + uniform(-2,3, random);
-    int tree_j = jj_min + regionLength/2 + uniform(-2,3, random);
+    auto random = Random(this.seed + centerRel_ij.x + centerRel_ij.y);
+    bool withTree = uniform(0, 2, random) == 1;
+    int tree_i = ii_min + regionWidth/2 + uniform(-2, 3, random);
+    int tree_j = jj_min + regionLength/2 + uniform(-2, 3, random);
 
     int chunkColMin = 99999999;
     foreach(ii; ii_min..ii_max)

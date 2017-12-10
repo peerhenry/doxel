@@ -50,8 +50,13 @@ class SceneProgramWater: ISceneProgram
     spec.destroy;
   }
 
+  float time = 0;
+
   void setUniforms()
   {
+    time += 0.005;
+    if(time >= 1) time = 0;
+    _program.uniform("Time").set( time );
     _program.uniform("ViewPosition").set( cam.position );
     normalMap.bind();
   }

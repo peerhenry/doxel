@@ -84,7 +84,7 @@ class DoxelGame : Game
 
   void setupStage()
   {
-    float pLoadRange = 180;
+    float pLoadRange = 240;
     float tLoadRange = 140;
 
     Zone[int] zones = [
@@ -92,8 +92,8 @@ class DoxelGame : Game
       2: Zone(tLoadRange, 1.1*tLoadRange, [chunkSceneStandard, waterScene])
     ];
 
-    Limiter chunkLimiter = new Limiter(20); // limits the number of chunk columns checked
-    Limiter modelLimiter = new Limiter(5); // limits the number of models created
+    Limiter chunkLimiter = new Limiter(30); // limits the number of chunk columns checked
+    Limiter modelLimiter = new Limiter(10); // limits the number of models created
 
     int seed = 3;
     Perlin perlin = new Perlin(seed);

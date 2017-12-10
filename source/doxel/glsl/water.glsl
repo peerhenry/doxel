@@ -27,6 +27,7 @@ uniform vec3 ViewPosition;
 uniform vec3 WaterColor = vec3( 0.5, 0.6, 0.95 );
 uniform float WaterShininess = 128.0;
 uniform mat4 Model;
+uniform float Time;
 
 uniform sampler2D NormalMap;
 
@@ -47,7 +48,7 @@ vec3 phong(vec3 targetDir, vec3 normal)
 void main()
 {
   vec3 targetDir = normalize((Model*vec4(Position,1.0)).xyz - ViewPosition);
-  vec3 normal = normalize(texture(NormalMap, TexCoord).rgb);
+  vec3 normal = normalize(texture(NormalMap, TexCoord + vec2(Time)).rgb);
   float dirDotN = dot(targetDir,vec3(0,0,-1)); // 1: look through, 0: opaque
   //FragColor = vec4( normal + 0.01*phong( Position, vec3(0, 0, 1) ), 1.0);
   FragColor = vec4( phong( targetDir, normal ), (1-0.5*dirDotN));
