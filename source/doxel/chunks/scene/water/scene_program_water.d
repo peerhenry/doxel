@@ -41,7 +41,6 @@ class SceneProgramWater: ISceneProgram
     _program.uniform("PVM").set( mat4f.identity );
     _program.uniform("ViewPosition").set( vec3f(1, 0, 0) );
     _program.uniform("Model").set( mat4f.identity );
-    //normalMap.bind();
   }
 
   ~this()

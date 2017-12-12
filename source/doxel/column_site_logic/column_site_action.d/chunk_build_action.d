@@ -1,23 +1,25 @@
 import std.random, std.math:floor;
 import gfm.math;
-import doxel_world, height_provider;
+import i_column_site_action, column_site_queue_item, doxel_world, height_provider;
 
-class WorldSurfaceGenerator
+class ChunkBuildAction: IColumnSiteAction
 {
-  private IHeightProvider heightProvider;
-  private World world;
-  private int seed;
+  private HeightProvider _heightProvider;
+  private World _world;
 
-  this(World world, IHeightProvider heightProvider, int seed)
+  this(HeightProvider heightProvider, World world)
   {
-    this.world = world;
-    //heightProvider.setOffset(-10);
-    this.heightProvider = heightProvider;
-    this.seed = seed;
+    _heightProvider = heightProvider;
+    _world = world;
   }
-  
-  /// The parameters are site indices relative to the center chunk.
-  void generateChunkColumn(vec2i centerRel_ij)
+
+  void perform(ColumnSiteQueueItem qItem)
+  {
+    generateChunkColumn(qItem.site);
+    qItem.state = ColumnSiteState.HAS_CHUNKS;
+  }
+
+  private void generateChunkColumn(vec2i centerRel_ij)
   {
     // set block site bounds
     int ii_min = (centerRel_ij.x)*regionWidth;
@@ -26,7 +28,7 @@ class WorldSurfaceGenerator
     int jj_max = jj_min + regionLength;
 
     // set tree spawn parameters
-    auto random = Random(this.seed + centerRel_ij.x + centerRel_ij.y);
+    auto random = Random(centerRel_ij.x + centerRel_ij.y);
     bool withTree = uniform(0, 2, random) == 1;
     int tree_i = ii_min + regionWidth/2 + uniform(-2, 3, random);
     int tree_j = jj_min + regionLength/2 + uniform(-2, 3, random);
@@ -37,7 +39,7 @@ class WorldSurfaceGenerator
     {
       foreach(jj; jj_min..jj_max)
       {
-        int next_h = heightProvider.getHeight(ii, jj);
+        int next_h = _heightProvider.getHeight(ii, jj);
         if(next_h < chunkColMin) chunkColMin = next_h;
       }
     }
@@ -48,12 +50,12 @@ class WorldSurfaceGenerator
     {
       foreach(jj; jj_min..jj_max)
       {
-        int h = heightProvider.getHeight(ii, jj);
+        int h = _heightProvider.getHeight(ii, jj);
         int[4] h_enws = [
-          heightProvider.getHeight(ii+1, jj)
-          , heightProvider.getHeight(ii, jj+1)
-          , heightProvider.getHeight(ii-1, jj)
-          , heightProvider.getHeight(ii, jj-1)
+          _heightProvider.getHeight(ii+1, jj)
+          , _heightProvider.getHeight(ii, jj+1)
+          , _heightProvider.getHeight(ii-1, jj)
+          , _heightProvider.getHeight(ii, jj-1)
         ];
 
         Block surface = h<1 ? Block.SAND : Block.GRASS;
@@ -68,7 +70,7 @@ class WorldSurfaceGenerator
         {
           // all blocks under this one in this chunk become blob
           h_min = h;
-          world.setBlock(ii, jj, h, surface);
+          _world.setBlock(ii, jj, h, surface);
         }
         else
         {
@@ -77,7 +79,7 @@ class WorldSurfaceGenerator
           {
             Block block = hi<h ? Block.DIRT : surface;
             if(hi<h-4) block = Block.STONE;
-            world.setBlock(ii, jj, hi, block);
+            _world.setBlock(ii, jj, hi, block);
           }
         }
 
@@ -86,7 +88,7 @@ class WorldSurfaceGenerator
         {
           foreach(hi; chunkColBottom..h_min)
           {
-            world.setBlock(ii, jj, hi, Block.PULP);
+            _world.setBlock(ii, jj, hi, Block.PULP);
           }
         }
 
@@ -102,7 +104,7 @@ class WorldSurfaceGenerator
         {
           foreach(nn; (h+1)..0)
           {
-            world.setBlock(ii, jj, nn, Block.WATER);
+            _world.setBlock(ii, jj, nn, Block.WATER);
           }
         }
       }
@@ -110,7 +112,7 @@ class WorldSurfaceGenerator
     // spawn a blob chunk underneath
     int lowestChunkZ = calculator.siteCompModulo( chunkColMin, regionHeight );
     vec3i chunkPulpSite = vec3i( centerRel_ij.x, centerRel_ij.y, lowestChunkZ-1 );
-    //world.createPulpChunk( chunkPulpSite );
+    //_world.createPulpChunk( chunkPulpSite );
   }
 
   void spawnTree(int i, int j, int k, int height)
@@ -121,19 +123,19 @@ class WorldSurfaceGenerator
       {
         foreach(kk; -1..1)
         {
-          world.setBlock(i + ii, j + jj, k + height + kk, Block.LEAVES);
+          _world.setBlock(i + ii, j + jj, k + height + kk, Block.LEAVES);
         }
       }
     }
     // + cross at top of tree
-    world.setBlock(i -1, j, k + height + 1, Block.LEAVES);
-    world.setBlock(i, j, k + height + 1, Block.LEAVES);
-    world.setBlock(i + 1, j, k + height + 1, Block.LEAVES);
-    world.setBlock(i, j -1, k + height + 1, Block.LEAVES);
-    world.setBlock(i, j + 1, k + height + 1, Block.LEAVES);
+    _world.setBlock(i -1, j, k + height + 1, Block.LEAVES);
+    _world.setBlock(i, j, k + height + 1, Block.LEAVES);
+    _world.setBlock(i + 1, j, k + height + 1, Block.LEAVES);
+    _world.setBlock(i, j -1, k + height + 1, Block.LEAVES);
+    _world.setBlock(i, j + 1, k + height + 1, Block.LEAVES);
     foreach(h; 0..height)
     {
-      world.setBlock(i,j,k+h,Block.TRUNK);
+      _world.setBlock(i,j,k+h,Block.TRUNK);
     }
   }
 }

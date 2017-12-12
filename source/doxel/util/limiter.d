@@ -1,25 +1,26 @@
 class Limiter
 {
-  private int limit;
-  private int counter;
+  private int _limit;
+  @property int limit(){ return _limit; }
+  private int _counter;
 
   this(int limit)
   {
-    this.limit = limit;
+    this._limit = limit;
   }
 
   void reset()
   {
-    counter = 0;
+    _counter = 0;
   }
 
   void increment()
   {
-    counter++;
+    _counter++;
   }
 
   bool limitReached()
   {
-    return counter >= limit;
+    return _counter >= _limit;
   }
 }
