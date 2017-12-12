@@ -28,3 +28,12 @@ Either:
 - Or, the meshbuilder must call getGenerateChunk from world, which will mean two things:
 1. the world must be able to generate chunks
 2. WorldSurfaceChunkGenerator must change...
+
+
+// NOTES
+
+If you have a dub project that you want to open in VisualD, go to project root (where dub.json or dub.sdl is located) and execute this command:
+
+dub generate visuald
+
+This will generate a .sln file that you can open in Visual Studio if you have the VisualD extension installed.

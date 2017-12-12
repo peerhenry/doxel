@@ -6,20 +6,20 @@ class SceneProgramWater: ISceneProgram
   private
   {
     GLProgram _program;
-    Camera cam;
-    VertexSpecification!VertexPT spec;
-    Texture normalMap;
+    Camera _cam;
+    VertexSpecification!VertexPT _spec;
+    Texture _normalMap;
   }
 
   @property GLProgram program(){ return _program; }
-  @property VertexSpecification!VertexPT vertexSpec(){ return spec; }
+  @property VertexSpecification!VertexPT vertexSpec(){ return _spec; }
   
   this(OpenGL gl, Camera cam)
   {
     createProgram(gl);
-    this.cam = cam;
+    _cam = cam;
     initUniforms();
-    this.normalMap = new Texture(gl, _program, "NormalMap", "resources/water/4.jpg");
+    _normalMap = new Texture(gl, _program, "NormalMap", "resources/water/4.jpg");
   }
 
   private void createProgram(OpenGL gl)
@@ -27,7 +27,7 @@ class SceneProgramWater: ISceneProgram
     // dispense with loading and compiling of individual shaders
     string[] shader_source = readLines("source/doxel/glsl/water.glsl");
     _program = new GLProgram(gl, shader_source);
-    spec = new VertexSpecification!VertexPT(_program);
+    _spec = new VertexSpecification!VertexPT(_program);
   }
 
   private void initUniforms()
@@ -45,18 +45,19 @@ class SceneProgramWater: ISceneProgram
 
   ~this()
   {
+	_normalMap.destroy;
     _program.destroy;
-    spec.destroy;
+    _spec.destroy;
   }
 
-  float time = 0;
+  private float _time = 0;
 
   void setUniforms()
   {
-    time += 0.005;
-    if(time >= 1) time = 0;
-    _program.uniform("Time").set( time );
-    _program.uniform("ViewPosition").set( cam.position );
-    normalMap.bind();
+    _time += 0.005;
+    if(_time >= 1) _time = 0;
+    _program.uniform("Time").set( _time );
+    _program.uniform("ViewPosition").set( _cam.position );
+    _normalMap.bind();
   }
 }
