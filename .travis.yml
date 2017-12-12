@@ -1,0 +1,10 @@
+language: d
+
+os:
+- windows
+
+d:
+- dmd-2.077.0
+
+script:
+- dub test
