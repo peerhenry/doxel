@@ -1,4 +1,6 @@
-# Doxel [![Build Status](https://travis-ci.org/peerhenry/doxel.svg?branch=master)](https://travis-ci.org/peerhenry/doxel/)
+# Doxel
+[![Build Status](https://travis-ci.org/peerhenry/doxel.svg?branch=master)](https://travis-ci.org/peerhenry/doxel/)
+[![Coverage Status](https://coveralls.io/repos/github/peerhenry/doxel/badge.svg?branch=master)](https://coveralls.io/github/peerhenry/doxel?branch=master)
 
 A voxel engine in D.
 

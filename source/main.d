@@ -6,24 +6,26 @@ import doxelgame, inputhandler, player;
 
 static bool toRun = true;
 unittest{
-	toRun=false; 
+	toRun = false; 
 }
 
 void main()
 {
-	if(toRun)run();
+	if(toRun) run();
 	else{
 		import testrunner;
+		import core.exception;
 		writeln("");
 		failCount == 0? writeln("Test report: All test passed.") :  writeln("Test report: ", failCount, " tests failed.");
 		writeln("");
+		if(failCount > 1) throw new AssertError("Test run failed");
 	}
 }
 
 void run()
 {
-	import core.memory;
-	//GC.disable();
+	// import core.memory;
+	// GC.disable();
 	
 	int width = 1920;
 	int height = 1080;
@@ -42,7 +44,7 @@ void run()
 	container.register!Camera.existingInstance(cam);
 	container.register!Player.existingInstance(player);
 	container.register!InputHandler;
-  container.register!(Game, DoxelGame);
+	container.register!(Game, DoxelGame);
 
 	Game game = container.resolve!Game;
 	scope(exit) game.destroy;
