@@ -7,8 +7,8 @@ d:
 - dmd-2.077.0
 
 install:
-  # Install doveralls from the latest github release
-  - wget -q -O - "http://bit.ly/Doveralls" | bash
+# Install doveralls from the latest github release
+- wget -q -O "http://bit.ly/Doveralls" | bash
 
 script:
 - dub test -b unittest-cov
