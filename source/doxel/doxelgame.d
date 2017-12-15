@@ -1,10 +1,10 @@
 import std.array;
 import gfm.opengl, gfm.math, gfm.sdl2;
 import engine;
-import inputhandler, player, limiter,
-    blocks, doxel_world, doxel_stage, doxel_scene, chunk_stage_world_generator,
-    perlin, doxel_height_map, world_surface_generator,
-    skybox, quadoverlay, skeletonscene, column_site_logic;
+import inputhandler, player, limiter, perlin,
+    doxel_world, doxel_stage, doxel_scene, doxel_pieces, doxel_height_map,
+    chunk_stage_world_generator, world_surface_generator, chunk_column_provider,
+    skybox, quadoverlay;
 
 class DoxelGame : Game
 {
@@ -15,12 +15,14 @@ class DoxelGame : Game
   InputHandler input;
 
   World world;
-  ChunkStage chunkStage;
+  ChunkStage chunkStage; // to become obsolete
+  PieceStage pieceStage;
 
   Skybox skybox;
   ChunkScene chunkSceneStandard;
   ChunkScene chunkScenePoints;
   ChunkScene waterScene;
+  ChunkScene skeletonScene;
 
   SDLTTF ttf;
   SDLFont font;
@@ -47,8 +49,11 @@ class DoxelGame : Game
     setupWaterScene();
     setupStandardScene();
     setupPointScene();
-    setupStage();
-	setupColumnSiteHandler();
+    setupSkeletonScene();
+
+    setupPieceStage();
+    //setupStage();
+	  //setupColumnSiteHandler();
   }
 
   void setupStandardScene()
@@ -83,7 +88,35 @@ class DoxelGame : Game
     waterScene.setValidator(new WaterSceneChunkValidator());
   }
 
-  void setupStage()
+  void setupSkeletonScene()
+  {
+    SceneProgramSkeleton sceneProgramSkeleton = new SceneProgramSkeleton(gl);
+    UniformSetter setter = new PvmSetter(sceneProgramSkeleton.program, camera, "PVM");
+    SkeletonMeshBuilder skeletonMeshBuilder = new SkeletonMeshBuilder();
+    IChunkModelFactory skeletonModelFac = new SkeletonModelFactory(gl, sceneProgramSkeleton.vertexSpec, skeletonMeshBuilder);
+    IChunkSceneObjectFactory sceneObjFac = new ChunkSceneObjectFactory(skeletonModelFac, setter);
+    skeletonScene = new ChunkScene(camera, sceneProgramSkeleton, sceneObjFac);
+  }
+
+  void setupPieceStage()
+  {
+    FracRange[] ranges = [
+      FracRange(0, 32, 42),
+      FracRange(2, 200, 250)
+    ];
+    IFracRangeChecker rangeChecker = new FracRangeChecker(camera, ranges);
+    PieceFactory pieceFactory = new PieceFactory(chunkSceneStandard, skeletonScene);
+    int seed = 3;
+    IHeightProvider heightProvider = createHeightProvider(seed);
+    WorldSurfaceGenerator surfaceGenerator = new WorldSurfaceGenerator(world, heightProvider, seed);
+    ChunkColumnProvider chunkProvider = new ChunkColumnProvider(world, surfaceGenerator);
+    int maxRank = 3;
+    PieceQueueProvider queueProvider = new PieceQueueProvider(maxRank, pieceFactory, rangeChecker);
+    pieceStage = new PieceStage(camera, queueProvider, heightProvider, chunkProvider);
+  }
+
+  // to become obsolete...
+  /*void setupStage()
   {
     float pLoadRange = 240;
     float tLoadRange = 140;
@@ -97,21 +130,21 @@ class DoxelGame : Game
     Limiter modelLimiter = new Limiter(10); // limits the number of models created
 
     int seed = 3;
+    IHeightProvider heightProvider = createHeightProvider(seed);
+    WorldSurfaceGenerator surfaceGenerator = new WorldSurfaceGenerator(world, heightProvider, seed);
+    ChunkStageWorldGenerator generator = new ChunkStageWorldGenerator(camera, world, chunkLimiter, surfaceGenerator);
+    IChunkStageObjectFactory chunkStageObjectFactory = new ChunkStageObjectFactory(camera, zones, modelLimiter);
+    chunkStage = new ChunkStage(chunkStageObjectFactory, modelLimiter, generator);
+  }*/
+
+  IHeightProvider createHeightProvider(int seed)
+  {
     Perlin perlin = new Perlin(seed);
     int cellSize = 128;  // 128
     int depthRange = 64; // 64
     HeightGenerator heightGenerator = new HeightGenerator(perlin, cellSize, depthRange); // noise, cell size, range
     auto heightMap = new HeightMap();
-    IHeightProvider provider = new HeightProvider(heightGenerator, heightMap);
-    WorldSurfaceGenerator surfaceGenerator = new WorldSurfaceGenerator(world, provider, seed);
-    ChunkStageWorldGenerator generator = new ChunkStageWorldGenerator(camera, world, chunkLimiter, surfaceGenerator);
-    IChunkStageObjectFactory chunkStageObjectFactory = new ChunkStageObjectFactory(camera, zones, modelLimiter);
-    chunkStage = new ChunkStage(chunkStageObjectFactory, modelLimiter, generator);
-  }
-
-  void setupColumnSiteHandler()
-  {
-	  //_columnSiteHandler = new ColumnSiteHandler();
+    return new HeightProvider(heightGenerator, heightMap);
   }
 
   ~this()
@@ -121,6 +154,7 @@ class DoxelGame : Game
     chunkScenePoints.destroy;
     skybox.destroy;
     waterScene.destroy;
+    skeletonScene.destroy;
   }
 
   void initialize()
@@ -152,7 +186,8 @@ class DoxelGame : Game
     input.update();
     camera.update(dt_ms);
     player.update(dt_ms);
-    chunkStage.update(dt_ms);
+    //chunkStage.update(dt_ms);
+    pieceStage.update();
   }
   
   void draw()
@@ -162,5 +197,6 @@ class DoxelGame : Game
     glClear(GL_DEPTH_BUFFER_BIT);
     chunkSceneStandard.draw();
     waterScene.draw();
+    skeletonScene.draw();
   }
 }

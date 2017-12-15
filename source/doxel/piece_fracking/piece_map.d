@@ -1,19 +1,21 @@
 import gfm.math;
-import piece;
+import piece, piece_factory;
 
 class PieceMap
 {
   private QueuePiece[int][int] _dic;
   private int _maxRank;
+  private PieceFactory _factory;
 
-  this(int maxRank)
+  this(int maxRank, PieceFactory factory)
   {
     _maxRank = maxRank;
+    _factory = factory;
   }
 
   QueuePiece insert(DummyPiece dummy)
   {
-    QueuePiece qPiece = PieceFactory.create(dummy);
+    QueuePiece qPiece = _factory.create(dummy);
     if(qPiece.rank == _maxRank) _dic[qPiece.site.x][qPiece.site.y] = qPiece;
     else{
       QueuePiece qParent = retrieve(dummy.parent);
@@ -44,24 +46,28 @@ class PieceMap
     return *val;
   }
 
+  // TEST
+
   unittest{
     import testrunner;
 
     runsuite("PieceMap", delegate void(){
 
+      PieceFactory testFac = new PieceFactory(null, null);
+
       runtest("retrieve non existant", delegate void(){
-        auto pm = new PieceMap(1);
-        auto dp = PieceFactory.createDummy(1, vec2i(1,2));
+        auto pm = new PieceMap(1, testFac);
+        auto dp = testFac.createDummy(1, vec2i(1,2));
         auto result = pm.retrieve(dp);
         assertEqual(null, result);
       });
 
       runtest("retrieveAtSite existant", delegate void(){
         // arrange
-        auto pm = new PieceMap(1);
+        auto pm = new PieceMap(1, testFac);
         vec2i site = vec2i(0,1);
-        auto dummy = PieceFactory.createDummy(1, site);
-        auto expect = PieceFactory.create(dummy);
+        auto dummy = testFac.createDummy(1, site);
+        auto expect = testFac.create(dummy);
         pm.insert(dummy);
         // act
         auto result = pm.retrieveAtSite(site);
@@ -76,9 +82,9 @@ class PieceMap
 
       runtest("retrieve existant", delegate void(){
         // arrange
-        auto pm = new PieceMap(1);
-        auto dummy = PieceFactory.createDummy(1, vec2i(0,1));
-        auto expect = PieceFactory.create(dummy);
+        auto pm = new PieceMap(1, testFac);
+        auto dummy = testFac.createDummy(1, vec2i(0,1));
+        auto expect = testFac.create(dummy);
         pm.insert(dummy);
         // act
         auto result = pm.retrieve(dummy);
@@ -93,9 +99,9 @@ class PieceMap
 
       runtest("insert/retrieve lower rank", delegate void(){
         // arrange
-        auto pm = new PieceMap(2);
-        auto dummyParent = PieceFactory.createDummy(2, vec2i(0,1));
-        auto dp = PieceFactory.createDummy(dummyParent, vec2i(1,0));
+        auto pm = new PieceMap(2, testFac);
+        auto dummyParent = testFac.createDummy(2, vec2i(0,1));
+        auto dp = testFac.createDummy(dummyParent, vec2i(1,0));
         auto expect = pm.insert(dp);
         // act
         auto result = pm.retrieve(dp);

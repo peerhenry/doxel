@@ -2,6 +2,12 @@ import gfm.math:vec2i;
 import engine;
 import piece;
 
+interface IFracRangeChecker
+{
+  bool withinFracRange(DummyPiece piece);
+  bool outsideUnfracRange(QueuePiece piece);
+}
+
 struct FracRange{
   int rank;
   int sqRange;
@@ -14,7 +20,7 @@ struct FracRange{
   }
 }
 
-class FracRangeChecker
+class FracRangeChecker: IFracRangeChecker
 {
   private{
     Camera _cam;

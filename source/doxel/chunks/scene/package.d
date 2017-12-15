@@ -18,6 +18,10 @@ public import water_mesh_builder;
 public import water_chunk_model_factory;
 public import water_scene_chunk_validator;
 
+public import scene_program_skeleton;
+public import skeleton_mesh_builder;
+public import skeleton_model_factory;
+
 public import point_mesh_builder;
 public import point_chunk_model_factory;
 public import scene_program_points;

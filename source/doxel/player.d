@@ -7,7 +7,7 @@ class Player: Updatable
   float crownHeight;
   float camHeight;
   bool grounded;
-  float speed = 7; // world float unit per second
+  float speed = 2; // world float unit per second
 
   private float half_bb_w;
   private vec3f minOffset;
