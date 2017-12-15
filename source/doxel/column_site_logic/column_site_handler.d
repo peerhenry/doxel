@@ -18,20 +18,19 @@ class ColumnSiteIterator
 
   void update(ColumnSiteQueueItem[] queue)
   {
-    if(_trackIndex < queue.length)
+    bool evalNext = _trackIndex < queue.length;
+    while(evalNext)
     {
-      while(!_limiter.limitReached())
+      ColumnSiteQueueItem nextItem = queue[_trackIndex];
+      if(nextItem.state == _requiredState)
       {
-        ColumnSiteQueueItem nextItem = queue[_trackIndex];
-        if(nextItem.state == _requiredState)
-        {
-          _colSiteAction.perform( nextItem );
-          _limiter.increment();
-        }
-        _trackIndex++;
+        _colSiteAction.perform( nextItem );
+        _limiter.increment();
       }
-      _limiter.reset();
+      _trackIndex++;
+      evalNext = _trackIndex < queue.length && !_limiter.limitReached();
     }
+    _limiter.reset();
   }
 
   void resetTracker()

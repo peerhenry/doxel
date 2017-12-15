@@ -39,7 +39,7 @@ class ChunkStageObject: Updatable
   {
     this.cam = cam;
     this.zones = zones;
-    this.chunks = chunks.dup;
+    this.chunks = chunks;
     this.boundZoneIndex = 0;
     this.modelLimiter = modelLimiter;
 

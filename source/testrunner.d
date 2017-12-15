@@ -80,7 +80,22 @@ void assertEqual(T)(T expected, T result)
   {
     //writeln("Assertion failed, expected: ", expected, " actual: ", result);
     //throw error;
-    string msg = format!("Assertion failed, expected: %s actual: %s")(expected, result);
+    string msg = format!("Assertion failed; expected: %s actual: %s")(expected, result);
+    throw new AssertError(msg);
+  }
+}
+
+void assertEqual(T)(T expected, T result, string name)
+{
+  try
+  {
+    assert(expected is result);
+  }
+  catch(AssertError error)
+  {
+    //writeln("Assertion failed, expected: ", expected, " actual: ", result);
+    //throw error;
+    string msg = format!("Assertion failed for %s; expected: %s actual: %s")(name, expected, result);
     throw new AssertError(msg);
   }
 }

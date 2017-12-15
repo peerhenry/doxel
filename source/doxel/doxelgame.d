@@ -3,8 +3,8 @@ import gfm.opengl, gfm.math, gfm.sdl2;
 import engine;
 import inputhandler, player, limiter,
     blocks, doxel_world, doxel_stage, doxel_scene, chunk_stage_world_generator,
-    perlin, doxel_height_map, height_provider, height_generator, world_surface_generator,
-    skybox, quadoverlay, skeletonscene;
+    perlin, doxel_height_map, world_surface_generator,
+    skybox, quadoverlay, skeletonscene, column_site_logic;
 
 class DoxelGame : Game
 {
@@ -48,6 +48,7 @@ class DoxelGame : Game
     setupStandardScene();
     setupPointScene();
     setupStage();
+	setupColumnSiteHandler();
   }
 
   void setupStandardScene()
@@ -106,6 +107,11 @@ class DoxelGame : Game
     ChunkStageWorldGenerator generator = new ChunkStageWorldGenerator(camera, world, chunkLimiter, surfaceGenerator);
     IChunkStageObjectFactory chunkStageObjectFactory = new ChunkStageObjectFactory(camera, zones, modelLimiter);
     chunkStage = new ChunkStage(chunkStageObjectFactory, modelLimiter, generator);
+  }
+
+  void setupColumnSiteHandler()
+  {
+	  //_columnSiteHandler = new ColumnSiteHandler();
   }
 
   ~this()

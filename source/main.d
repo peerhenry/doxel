@@ -15,10 +15,13 @@ void main()
 	else{
 		import testrunner;
 		import core.exception;
-		writeln("");
-		failCount == 0? writeln("Test report: All test passed.") :  writeln("Test report: ", failCount, " tests failed.");
-		writeln("");
+		if(failCount == 0) writeln("Test report: All test passed.");
+		else {
+			string appendix = failCount > 1 ? " tests failed." : " test failed.";
+			writeln("Test report: ", failCount, appendix);
+		}
 		if(failCount > 1) throw new AssertError("Test run failed");
+		writeln("");
 	}
 }
 

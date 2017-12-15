@@ -17,6 +17,7 @@ class ChunkBuildAction: IColumnSiteAction
   {
     generateChunkColumn(qItem.site);
     qItem.state = ColumnSiteState.HAS_CHUNKS;
+    qItem.chunks = _world.getNewChunks();
   }
 
   private void generateChunkColumn(vec2i centerRel_ij)

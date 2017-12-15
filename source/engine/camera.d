@@ -36,6 +36,9 @@ class Camera : Updatable
   @property vec3f position() { return pos; }
   float getTheta(){return theta;}
   float getPhi(){return phi;}
+  @property float x(){ return pos.x; }
+  @property float y(){ return pos.y; }
+  @property float z(){ return pos.z; }
   
   static const vec3f up = vec3f(0.0, 0.0, 1.0);
 

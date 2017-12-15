@@ -7,3 +7,5 @@ public import i_map_cell_container;
 public import i_map_cell;
 public import map_cell_container;
 public import map_site_calculator;
+public import height_generator;
+public import height_provider;
