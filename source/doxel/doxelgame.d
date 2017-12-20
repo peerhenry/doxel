@@ -100,12 +100,13 @@ class DoxelGame : Game
 
   void setupPieceStage()
   {
-    RangeSettings rangeSettings = new RangeSettings( [ RangeSetting(0, 32, 42), RangeSetting(1, 100, 140) ] );
+    RangeSettings rangeSettings = new RangeSettings( [ RangeSetting(0, 32, 42), RangeSetting(3, 300, 340), RangeSetting(4, 600, 640) ] );
     //FracRange[] ranges = [ FracRange(0, 32, 42), FracRange(2, 200, 250) ];
     //FracRange[] ranges = [ FracRange(0, 16, 42) ];
     IFracRangeChecker rangeChecker = new FracRangeChecker(rangeSettings);
-    auto upToRank3 = ScenesInRank(3, [chunkSceneStandard, skeletonScene]);
-    IRankScenes rankScenes = new RankScenes( [ upToRank3 ] );
+    auto upToRank3 = ScenesInRank(3, [chunkSceneStandard, skeletonScene, waterScene]);
+    auto upToRank4 = ScenesInRank(4, [skeletonScene, chunkScenePoints]);
+    IRankScenes rankScenes = new RankScenes( [ upToRank3, upToRank4 ] );
     PieceFactory pieceFactory = new PieceFactory(rankScenes);
 
     int seed = 3;
@@ -114,9 +115,11 @@ class DoxelGame : Game
     ChunkColumnProvider chunkProvider = new ChunkColumnProvider(world, surfaceGenerator);
     auto processor = new QueueProcessor(heightProvider, chunkProvider);
 
-    IPieceUnfracker unfracker = new PieceUnfracker();
-    PieceQueueProvider queueProvider = new PieceQueueProvider(pieceFactory, rangeChecker, unfracker);
-    IPieceUnloader unloader = new PieceUnloader( queueProvider.getPieceMap() );
+    IPieceMap pieceMap = new PieceMap(rangeChecker.maxRank, pieceFactory);
+    IPieceUnloader unloader = new PieceUnloader( pieceMap );
+    IPieceUnfracker unfracker = new PieceUnfracker(unloader);
+    PieceQueueProvider queueProvider = new PieceQueueProvider(pieceMap, pieceFactory, rangeChecker, unfracker);
+    
     auto oldQueueProcessor = new OldQueueProcessor(rangeChecker, unfracker, unloader);
 
     pieceStage = new PieceStage(camera, queueProvider, processor, oldQueueProcessor);

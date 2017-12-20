@@ -55,7 +55,7 @@ class SceneProgramWater: ISceneProgram
   void setUniforms()
   {
     _time += 0.005;
-    if(_time >= 1) _time = 0;
+    if(_time >= 10) _time = 0;
     _program.uniform("Time").set( _time );
     _program.uniform("ViewPosition").set( _cam.position );
     _normalMap.bind();

@@ -48,8 +48,8 @@ class Camera : Updatable
   {
     this.FOVY = PI / 3;
     this.ratio = 16.0/9.0;
-    this.near = 0.1;
-    this.far = 99999.0;
+    this.near = 1;
+    this.far = 9999.0;
     calculateProjection();
 	  this.pos = vec3f(-10.0, 0, 0);
     this.theta = 0.0;

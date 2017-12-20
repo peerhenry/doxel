@@ -1,4 +1,4 @@
-import std.math:floor;
+import std.math;
 import gfm.math;
 import engine;
 import limiter, piece, piece_queue_provider, height_provider, chunk_column_provider, doxel_world;
@@ -15,7 +15,7 @@ class QueueProcessor: IQueueProcessor
     IHeightProvider _heightGenerator;
     IChunkColumnProvider _chunkProvider;
     int _nextIndex = 0;
-    Limiter _limiter = new Limiter(4);
+    Limiter _limiter = new Limiter(8);
     QueuePiece[] _queue = [];
   }
 
@@ -35,15 +35,25 @@ class QueueProcessor: IQueueProcessor
   {
     if(_queue.length == 0) return;
     _limiter.reset();
-    while(!_limiter.limitReached())
+    while(!_limiter.limitReached() && _nextIndex < _queue.length)
     {
       auto piece = _queue[_nextIndex];
+      bool incr_limiter = !piece.hasHeights || !piece.hasChunks || !piece.hasModel;
       if(!piece.hasHeights) genHeights(piece);
       else if(!piece.hasChunks) setChunks(piece);
       else if(!piece.hasModel) piece.createModel();
-      int modder = cast(int)_queue.length;
-      _nextIndex = (_nextIndex+1)%modder;
-      _limiter.increment();
+      _nextIndex++;
+      if(incr_limiter)
+      {
+        foreach(i; 0..pow(2, piece.rank))
+        {
+          _limiter.increment();
+        }
+      }
+    }
+    if(_nextIndex >= _queue.length)
+    {
+      _nextIndex = 0;
     }
   }
 
