@@ -3,6 +3,8 @@ import gfm.math;
 
 import updatable;
 
+static const float PHI_MAX = PI_2 - 0.01;
+
 class Camera : Updatable
 {
   private{
@@ -165,8 +167,8 @@ class Camera : Updatable
     this.phi += dphi;
     while(this.theta > 2*PI) this.theta -= 2*PI;
     while(this.theta < 0) this.theta += 2*PI;
-    if(this.phi > PI_2) this.phi = PI_2;
-    else if(this.phi < -PI_2) this.phi = -PI_2;
+    if(this.phi > PHI_MAX) this.phi = PHI_MAX;
+    else if(this.phi < -PHI_MAX) this.phi = -PHI_MAX;
     updateView = true;
   }
 

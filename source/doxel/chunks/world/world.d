@@ -30,7 +30,7 @@ class World
 
   Chunk[] getNewChunks()
   {
-    return newChunks.data();
+    return newChunks.data().dup;
   }
 
   void clearNewChunks()

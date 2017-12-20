@@ -1,7 +1,14 @@
 import gfm.math;
 import piece, piece_factory;
 
-class PieceMap
+interface IPieceMap
+{
+  QueuePiece insert(DummyPiece dummy);
+  QueuePiece retrieve(DummyPiece dp);
+  bool remove(QueuePiece piece);
+}
+
+class PieceMap: IPieceMap
 {
   private QueuePiece[int][int] _dic;
   private int _maxRank;
@@ -37,6 +44,14 @@ class PieceMap
     }
   }
 
+  bool remove(QueuePiece piece)
+  {
+    auto val = retrieveAtSite(piece.site);
+    if(val is null) return false;
+    _dic[piece.site.x].remove(piece.site.y);
+    return true;
+  }
+
   private QueuePiece retrieveAtSite(vec2i site)
   {
     QueuePiece[int]* dic1 = site.x in _dic;
@@ -50,10 +65,19 @@ class PieceMap
 
   unittest{
     import testrunner;
+    import rank_scenes, chunkscene;
+
+    class MockRankScenes: IRankScenes
+    {
+      IChunkScene[] getScenes(int rank)
+      {
+        return null;
+      }
+    }
 
     runsuite("PieceMap", delegate void(){
 
-      PieceFactory testFac = new PieceFactory(null, null);
+      PieceFactory testFac = new PieceFactory(new MockRankScenes());
 
       runtest("retrieve non existant", delegate void(){
         auto pm = new PieceMap(1, testFac);
@@ -107,6 +131,28 @@ class PieceMap
         auto result = pm.retrieve(dp);
         // assert
         assertEqual(expect, result);
+      });
+
+      runtest("remove non existant", delegate void(){
+        // arrange
+        auto pm = new PieceMap(1, testFac);
+        auto dp = testFac.createDummy(1, vec2i(1,2));
+        auto p = testFac.create(dp);
+        // act
+        auto result = pm.remove(p);
+        // assert
+        assertEqual(false, result);
+      });
+
+      runtest("insert & remove", delegate void(){
+        // arrange
+        auto pm = new PieceMap(1, testFac);
+        auto dp = testFac.createDummy(1, vec2i(1,2));
+        auto qp = pm.insert(dp);
+        // act
+        auto result = pm.remove(qp);
+        // assert
+        assertEqual(true, result);
       });
 
     });

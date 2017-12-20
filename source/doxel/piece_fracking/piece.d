@@ -25,13 +25,13 @@ class QueuePiece: Piece
   bool hasModel;
   private{
     Chunk[] _chunks;
-    ChunkScene[] _scenes;
+    IChunkScene[] _scenes;
     SceneObject[] _sceneObjects;
   }
 
   this(){}
 
-  this(ChunkScene[] scenes)
+  this(IChunkScene[] scenes)
   {
     _scenes = scenes;
   }

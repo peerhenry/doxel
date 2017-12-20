@@ -2,6 +2,8 @@ import std.random, std.math;
 import gfm.math;
 import engine;
 import world_surface_generator, limiter, world, chunkstage, perlin, height_generator, height_map, height_provider, worldsettings;
+
+// OBSOLETE
 class ChunkStageWorldGenerator
 {
   private Camera cam;

@@ -1,93 +1,79 @@
-import gfm.math:vec2i;
+import gfm.math;
 import engine;
-import piece;
+import piece, range_settings;
 
 interface IFracRangeChecker
 {
-  bool withinFracRange(DummyPiece piece);
-  bool outsideUnfracRange(QueuePiece piece);
-}
+  @property int maxRank();
+  @property RangeSetting topRankRange();
 
-struct FracRange{
-  int rank;
-  int sqRange;
-  int sqUnfracRange;
-  this(int rank, int range, int unfracRange)
-  {
-    this.rank = rank;
-    this.sqRange = range*range;
-    this.sqUnfracRange = unfracRange*unfracRange;
-  }
+  // used for highest rank; pieces that enter or leave the stage
+  bool withinLoadRange(vec2f position, DummyPiece piece);
+  bool outsideUnloadRange(vec2f position, QueuePiece piece);
+
+  bool withinFracRange(vec2f position, DummyPiece piece);
+  bool outsideUnfracRange(vec2f position, QueuePiece piece);
 }
 
 class FracRangeChecker: IFracRangeChecker
 {
   private{
-    Camera _cam;
-    FracRange[] _fracRanges;
-    FracRange _lowestFracRange;
-    int _fr1s, _fr2s, _ufr1s, _ufr2s;
+    RangeSettings _rangeSettings;
   }
 
-  this(Camera cam, FracRange[] fracRanges)
+  @property int maxRank(){ return _rangeSettings.maxRank; }
+  @property RangeSetting topRankRange(){ return _rangeSettings.topRankRange; }
+
+  this(RangeSettings rangeSettings)
   {
-    _cam = cam;
-    _fracRanges = fracRanges;
-    _lowestFracRange = FracRange(99999, 1, 1);
-    foreach(fr; fracRanges)
-    {
-      if(fr.rank < _lowestFracRange.rank) _lowestFracRange = fr;
-    }
+    _rangeSettings = rangeSettings;
   }
 
-  bool withinFracRange(DummyPiece piece)
+
+  bool withinLoadRange(vec2f position, DummyPiece piece)
   {
-    int sdcp = sqDistCamPiece(_cam, piece);
-    int rs = getSqFracRange(piece.rank);
+    assert(piece.rank == maxRank);
+    int sdcp = sqDistanceToPiece(position, piece);
+    int rs = _rangeSettings.topRankRange.sqLoadRange;
     return sdcp < rs;
   }
 
-  bool outsideUnfracRange(QueuePiece piece)
+  bool outsideUnloadRange(vec2f position, QueuePiece piece)
   {
-    int sdcp = sqDistCamPiece(_cam, piece);
-    int rs = getSqUnfracRange(piece.rank);
+    assert(piece.rank == maxRank);
+    int sdcp = sqDistanceToPiece(position, piece);
+    int rs = _rangeSettings.topRankRange.sqUnloadRange;
     return sdcp > rs;
   }
 
-  private int getSqFracRange(int rank)
+
+  bool withinFracRange(vec2f position, DummyPiece piece)
   {
-    auto fracRange = getHighestRangeBelow(rank);
-    return fracRange.sqRange;
+    int sdcp = sqDistanceToPiece(position, piece);
+    int rs = _rangeSettings.getSqLoadRange(piece.rank);
+    return sdcp < rs;
   }
 
-  private int getSqUnfracRange(int rank)
+  bool outsideUnfracRange(vec2f position, QueuePiece piece)
   {
-    auto fracRange = getHighestRangeBelow(rank);
-    return fracRange.sqUnfracRange;
+    int sdcp = sqDistanceToPiece(position, piece);
+    int rs = _rangeSettings.getSqUnloadRange(piece.rank);
+    return sdcp > rs;
   }
 
-  private FracRange getHighestRangeBelow(int rank)
-  {
-    FracRange fracRange = _lowestFracRange;
-    foreach(fr; _fracRanges)
-    {
-      if(fr.rank > fracRange.rank && fr.rank < rank) fracRange = fr;
-    }
-    return fracRange;
-  }
 
-  private static int sqDistCamPiece(Camera cam, Piece piece)
+  private static int sqDistanceToPiece(vec2f position, Piece piece)
   {
-    return sqDist(cast(vec2i)cam.position.xy, piece);
+    return sqDist(vec2i(cast(int)position.x, cast(int)position.y), piece);
   }
 
   private static int sqDist(vec2i point, Piece piece)
   {
     int sqd = 0;
     if( point.x < piece.x ) sqd += sqDist(point.x, piece.x);
-    if( point.x > piece.x ) sqd += sqDist(point.x, piece.x + piece.w);
+    if( point.x > piece.x + piece.w ) sqd += sqDist(point.x, piece.x + piece.w);
     if( point.y < piece.y ) sqd += sqDist(point.y, piece.y);
-    if( point.y > piece.y ) sqd += sqDist(point.y, piece.y + piece.h);
+    if( point.y > piece.y + piece.h ) sqd += sqDist(point.y, piece.y + piece.h);
     return sqd;
   }
 
@@ -106,38 +92,68 @@ class FracRangeChecker: IFracRangeChecker
         assertEqual(4, r);
       });
 
-      runtest("getSqUnfracRange", delegate void(){
+      runtest("withinFracRange", delegate void(){
         // arrange
-        FracRange fr1 = FracRange(0, 32, 42);
-        FracRange fr2 = FracRange(2, 200, 250);
-        FracRange[] fracRanges = [
-          fr1,
-          fr2
-        ];
-        auto checker = new FracRangeChecker(null, fracRanges);
+        RangeSettings settings = new RangeSettings( [ RangeSetting(0, 32, 42) ] );
+        auto checker = new FracRangeChecker(settings);
+        auto piece = new DummyPiece();
+        piece.rank = 1;
+        piece.x = 0;
+        piece.y = 0;
+        piece.w = 32;
+        piece.h = 32;
         // act
-        auto r1 = checker.getSqUnfracRange(3);
-        auto r2 = checker.getSqUnfracRange(2);
+        bool result1 = checker.withinFracRange(vec2f(4,4), piece);
         // assert
-        assertEqual(fr2.sqUnfracRange, r1);
-        assertEqual(fr1.sqUnfracRange, r2);
+        assertEqual(true, result1);
       });
 
-      runtest("getSqFracRange", delegate void(){
+      runtest("withinFracRange outside range", delegate void(){
         // arrange
-        FracRange fr1 = FracRange(0, 32, 42);
-        FracRange fr2 = FracRange(2, 200, 250);
-        FracRange[] fracRanges = [
-          fr1,
-          fr2
-        ];
-        auto checker = new FracRangeChecker(null, fracRanges);
+        RangeSettings settings = new RangeSettings( [ RangeSetting(0, 32, 42) ] );
+        auto checker = new FracRangeChecker(settings);
+        auto piece = new DummyPiece();
+        piece.rank = 1;
+        piece.x = 0;
+        piece.y = 0;
+        piece.w = 32;
+        piece.h = 32;
         // act
-        auto r1 = checker.getSqFracRange(3);
-        auto r2 = checker.getSqFracRange(2);
+        bool result2 = checker.withinFracRange(vec2f(-33,4), piece);
         // assert
-        assertEqual(fr2.sqRange, r1);
-        assertEqual(fr1.sqRange, r2);
+        assertEqual(false, result2);
+      });
+
+      runtest("sqDistanceToPiece", delegate void(){
+        // arrange
+        RangeSettings settings = new RangeSettings( [ RangeSetting(0, 32, 42) ] );
+        auto checker = new FracRangeChecker(settings);
+        auto piece = new DummyPiece();
+        piece.rank = 1;
+        piece.x = 0;
+        piece.y = 0;
+        piece.w = 32;
+        piece.h = 32;
+        // act
+        int sqDistance = checker.sqDistanceToPiece(vec2f(4,4), piece);
+        // assert
+        assertEqual(0, sqDistance);
+      });
+
+      runtest("sqDist should be 0 inside piece", delegate void(){
+        // arrange
+        RangeSettings settings = new RangeSettings( [ RangeSetting(0, 32, 42) ] );
+        auto checker = new FracRangeChecker(settings);
+        auto piece = new DummyPiece();
+        piece.rank = 1;
+        piece.x = 0;
+        piece.y = 0;
+        piece.w = 32;
+        piece.h = 32;
+        // act
+        int result = checker.sqDist(vec2i(4, 4), piece);
+        // assert
+        assertEqual(0, result);
       });
 
     });

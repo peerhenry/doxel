@@ -2,7 +2,12 @@ import std.random, std.math:floor;
 import gfm.math;
 import doxel_world, height_provider;
 
-class WorldSurfaceGenerator
+interface IWorldSurfaceGenerator
+{
+  void generateChunkColumn(vec2i centerRel_ij);
+}
+
+class WorldSurfaceGenerator: IWorldSurfaceGenerator
 {
   private IHeightProvider heightProvider;
   private World world;

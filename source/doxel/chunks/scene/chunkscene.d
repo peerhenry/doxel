@@ -13,7 +13,14 @@ class DefaultValidator : ISceneChunkValidator
   bool areValid(Chunk[] chunks){return true;}
 }
 
-class ChunkScene
+interface IChunkScene
+{
+  SceneObject createSceneObject(Chunk[] chunks);
+  void remove(SceneObject so);
+  void draw();
+}
+
+class ChunkScene: IChunkScene
 {
   private Camera camera;
   private DList!SceneObject sceneObjects;

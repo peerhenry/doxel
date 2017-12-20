@@ -39,7 +39,7 @@ class DoxelGame : Game
     input.setGame(this);
     this.camera = camera;
     this.player = player;
-    camera.setPosition(vec3f(0,0,10));
+    camera.setPosition(vec3f(4,4,10));
 
     world = new World();
 
@@ -100,19 +100,26 @@ class DoxelGame : Game
 
   void setupPieceStage()
   {
-    FracRange[] ranges = [
-      FracRange(0, 32, 42),
-      FracRange(2, 200, 250)
-    ];
-    IFracRangeChecker rangeChecker = new FracRangeChecker(camera, ranges);
-    PieceFactory pieceFactory = new PieceFactory(chunkSceneStandard, skeletonScene);
+    RangeSettings rangeSettings = new RangeSettings( [ RangeSetting(0, 32, 42), RangeSetting(1, 100, 140) ] );
+    //FracRange[] ranges = [ FracRange(0, 32, 42), FracRange(2, 200, 250) ];
+    //FracRange[] ranges = [ FracRange(0, 16, 42) ];
+    IFracRangeChecker rangeChecker = new FracRangeChecker(rangeSettings);
+    auto upToRank3 = ScenesInRank(3, [chunkSceneStandard, skeletonScene]);
+    IRankScenes rankScenes = new RankScenes( [ upToRank3 ] );
+    PieceFactory pieceFactory = new PieceFactory(rankScenes);
+
     int seed = 3;
     IHeightProvider heightProvider = createHeightProvider(seed);
     WorldSurfaceGenerator surfaceGenerator = new WorldSurfaceGenerator(world, heightProvider, seed);
     ChunkColumnProvider chunkProvider = new ChunkColumnProvider(world, surfaceGenerator);
-    int maxRank = 3;
-    PieceQueueProvider queueProvider = new PieceQueueProvider(maxRank, pieceFactory, rangeChecker);
-    pieceStage = new PieceStage(camera, queueProvider, heightProvider, chunkProvider);
+    auto processor = new QueueProcessor(heightProvider, chunkProvider);
+
+    IPieceUnfracker unfracker = new PieceUnfracker();
+    PieceQueueProvider queueProvider = new PieceQueueProvider(pieceFactory, rangeChecker, unfracker);
+    IPieceUnloader unloader = new PieceUnloader( queueProvider.getPieceMap() );
+    auto oldQueueProcessor = new OldQueueProcessor(rangeChecker, unfracker, unloader);
+
+    pieceStage = new PieceStage(camera, queueProvider, processor, oldQueueProcessor);
   }
 
   // to become obsolete...

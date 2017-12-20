@@ -1,23 +1,16 @@
 import std.math:pow;
 import gfm.math:vec2i;
-import piece, chunk, worldsettings, chunkscene;
+import piece, rank_scenes, chunk, worldsettings, chunkscene;
 
 class PieceFactory
 {
   private{
-    ChunkScene _standard;
-    ChunkScene _skeletor;
+    IRankScenes _rankScenes;
   }
 
-  this(ChunkScene standard, ChunkScene skeletor)
+  this(IRankScenes rankScenes)
   {
-    _standard = standard;
-    _skeletor = skeletor;
-  }
-
-  ChunkScene[] getScenes(int rank)
-  {
-    return [_standard, _skeletor];
+    _rankScenes = rankScenes;
   }
 
   static DummyPiece createDummy(int rank, vec2i site)
@@ -54,7 +47,7 @@ class PieceFactory
 
   QueuePiece create(DummyPiece dummy)
   {
-    QueuePiece result = new QueuePiece(getScenes(dummy.rank));
+    QueuePiece result = new QueuePiece( _rankScenes.getScenes(dummy.rank) );
     result.x = dummy.x;
     result.y = dummy.y;
     result.w = dummy.w;

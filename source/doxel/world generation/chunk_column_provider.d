@@ -1,7 +1,12 @@
 import gfm.math:vec2i;
 import world_surface_generator, doxel_world;
 
-class ChunkColumnProvider
+interface IChunkColumnProvider
+{
+  Chunk[] getColumn(vec2i site);
+}
+
+class ChunkColumnProvider: IChunkColumnProvider
 {
   private{
     World _world;
